@@ -1,0 +1,6 @@
+# agent-bench + DeepSeek Harness (dsh), Version gepinnt (developer preview!)
+FROM localhost/agent-bench
+USER root
+RUN npm install -g @deepseek-ai/dsh@0.1.1-rc.2 && npm cache clean --force
+USER bench
+WORKDIR /work

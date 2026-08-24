@@ -1,0 +1,25 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "llamacpp": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "llama.cpp",
+      "options": {
+        "baseURL": "http://169.254.1.2:8080/v1",
+        "apiKey": "sk-local"
+      },
+      "models": {
+        "local": {
+          "name": "local llama-server model",
+          "limit": { "context": 32768, "output": 8192 },
+          "tool_call": true
+        }
+      }
+    }
+  },
+  "permission": {
+    "edit": "allow",
+    "bash": "allow",
+    "webfetch": "deny"
+  }
+}

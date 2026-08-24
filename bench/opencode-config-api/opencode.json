@@ -1,0 +1,33 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "deepseek": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "DeepSeek API",
+      "options": {
+        "baseURL": "https://api.deepseek.com/v1",
+        "apiKey": "{env:DEEPSEEK_API_KEY}"
+      },
+      "models": {
+        "deepseek-v4-flash": { "name": "DeepSeek v4-flash", "limit": { "context": 131072, "output": 8192 }, "tool_call": true },
+        "deepseek-v4-pro":   { "name": "DeepSeek v4-pro",   "limit": { "context": 131072, "output": 8192 }, "tool_call": true }
+      }
+    },
+    "gemini": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Gemini API (OpenAI-compat)",
+      "options": {
+        "baseURL": "https://generativelanguage.googleapis.com/v1beta/openai",
+        "apiKey": "{env:GEMINI_API_KEY}"
+      },
+      "models": {
+        "gemini-3.7-flash": { "name": "Gemini 3.7 Flash", "limit": { "context": 131072, "output": 8192 }, "tool_call": true }
+      }
+    }
+  },
+  "permission": {
+    "edit": "allow",
+    "bash": "allow",
+    "webfetch": "deny"
+  }
+}

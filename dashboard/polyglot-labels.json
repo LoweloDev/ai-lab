@@ -1,0 +1,8 @@
+{
+  "_hinweis": "Zuordnung Polyglot-Lauf -> Modell-Label. Die Run-Namen tragen das Modell nicht; das tatsächlich benutzte Modell ist das, was zur Laufzeit auf :8080 diente. Zuordnung hier per Hand pflegen (Quellen: TODO-morgen.md — 35B=63% pass@2, 27B danach; Muse-Polyglot am 24.08. gestartet).",
+  "2026-08-23-18-38-50--dryrun-local": "dryrun",
+  "2026-08-23-20-18-59--local-qwen-py-go-20260823-221857": "qwen36moe",
+  "2026-08-23-23-11-36--local-qwen-py-go-20260824-011134": "qwen38",
+  "2026-08-24-13-09-40--local-qwen-py-go-20260824-150938": "muse",
+  "2026-08-24-13-50-42--local-qwen-py-go-20260824-155040": "muse"
+}

@@ -1,0 +1,1 @@
+In this Go monorepo, the test suite for the AI work admission gate is failing. Run `cd agora-backend && go test ./internal/aiwork/ -count=1` to see the failure. Background AI work is being admitted ahead of a user's publish that arrived earlier at the same priority. Find the bug and fix it. Do not edit any test files. When done, the whole package test suite must pass.

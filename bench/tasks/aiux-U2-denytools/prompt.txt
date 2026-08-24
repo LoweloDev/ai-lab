@@ -1,0 +1,10 @@
+Feature request for the web runtime adapter in runtime/web. The adapter's Layer-2 integrator policy (src/protection.js) already supports the options `denyTypePrefix`, `allowCodeReplacement` and `allowCodeLoading`. Add a fourth option: `denyTools`, an array of tool-name strings.
+
+Requirements:
+1. Any tool whose name is in `denyTools` must be refused at the dispatch chokepoint with a `RuntimeSecurityError` whose message names the blocked tool.
+2. Denied tools must not appear in the `tools` array returned by the `runtime.capabilities` tool.
+3. Denying a tool must also block its alias (for example, denying `runtime.search_types` must also block calls made under its alias `runtime.search_classes`, and vice versa).
+4. Layer 2 may only add restrictions — it must never relax Layer 1 protections.
+5. `RuntimeProtection.describe()` must report the list under the key `integratorDeniedTools`.
+
+Mirror the existing patterns in src/protection.js and src/dispatcher.js. All 46 existing tests must keep passing: `cd runtime/web && node --test "test/adapter.test.js" "test/attached.test.js"`. Do not edit existing test files.

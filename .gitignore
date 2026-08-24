@@ -1,0 +1,35 @@
+# --- Geheimnisse: niemals committen -----------------------------------------
+.env
+
+# --- Modelle & große Binärdaten ---------------------------------------------
+models/
+*.gguf
+
+# --- Laufzeit-Artefakte ------------------------------------------------------
+logs/
+nohup.out
+__pycache__/
+node_modules/
+
+# --- Benchmark-Läufe, Arbeitskopien, generierte Ausgaben ---------------------
+# (reproduzierbar über die Skripte bzw. zu groß fürs Repo)
+bench/runs/
+bench/workspaces/
+bench/smoke-ws/
+bench/claude-demo/
+bench/webapp/runs-dom/
+bench/webapp/runs-ux/
+bench/webapp/submissions.jsonl
+bench/webapp/shots/
+dashboard/runs/
+
+# bench/aider/: geklonte Fremd-Repos (aider, polyglot-benchmark) und
+# Multi-MB-Lauflogs bleiben draußen — die eigenen Dateien bleiben drin.
+bench/aider/*
+!bench/aider/run-polyglot-subset.sh
+!bench/aider/Dockerfile.podman
+
+# Persönliche Desktop-Screenshots (lokaler Input für grounding-test.py)
+bench/screenshot-*.png
+
+# Bewusst IM Repo: bench/results.jsonl — kleine, wertvolle Ergebnisdaten.

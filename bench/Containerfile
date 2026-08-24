@@ -1,0 +1,9 @@
+# Sandbox image for local-LLM coding-agent benchmarks (2026-08-23)
+# The benchmark agent runs inside this container and can only see /work.
+FROM docker.io/library/archlinux:latest
+RUN pacman -Syu --noconfirm --needed go nodejs npm git ripgrep opencode which && \
+    pacman -Scc --noconfirm
+RUN useradd -m bench
+USER bench
+WORKDIR /work
+ENV GOPATH=/home/bench/go GOFLAGS=-buildvcs=false

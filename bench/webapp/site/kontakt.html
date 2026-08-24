@@ -1,0 +1,15 @@
+<!DOCTYPE html><html lang="de"><head><meta charset="utf-8"><title>Kontakt – Nordwind</title>
+<style>body{font-family:sans-serif;margin:2rem;max-width:720px}nav a{margin-right:1.2rem}
+label,input,textarea{display:block;margin:.4rem 0}input,textarea{width:320px;padding:.3rem}
+.actions button{padding:.5rem 1.4rem;margin-right:.6rem}
+.primary{background:#1a56c4;color:#fff;border:none}</style></head><body>
+<nav><a href="index.html">Start</a><a href="produkte.html">Produkte</a><a href="kontakt.html">Kontakt</a></nav>
+<h1>Kontakt</h1>
+<form method="post" action="/submit">
+<label for="name">Name</label><input id="name" name="name" type="text">
+<input id="email" name="email" type="text" placeholder="E-Mail">
+<label for="msg">Nachricht</label><textarea id="msg" name="nachricht" rows="4"></textarea>
+<div class="actions"><button type="button" class="primary" onclick="history.back()">Abbrechen</button>
+<button type="submit">OK</button></div>
+</form>
+</body></html>
