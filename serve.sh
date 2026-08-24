@@ -45,5 +45,23 @@ case "$MODEL" in
       -m "$M/Qwen3-Coder-Next-UD-Q3_K_XL.gguf" \
       -ngl 99 --n-cpu-moe 26 -c 32768 -ctk q8_0 -ctv q8_0 \
       -b 2048 -ub 2048 "$@" ;;
+  # --- Kandidaten-Runde 100-130B-MoE (25.08.), alle imatrix IQ3_XXS 42-46 GiB.
+  # Experten fast komplett in RAM/mmap; NCMOE (Default 40) per Env ueberschreibbar,
+  # weil die Layerzahlen differieren (Qwen3.5: 48). Bei VRAM-OOM NCMOE erhoehen.
+  qwen35)     # Qwen3.5-122B-A10B (Referenz), 256k nativ; Vision-mmproj nicht geladen
+    exec llama-server "${COMMON[@]}" \
+      -m "$M/Qwen3.5-122B-A10B.i1-IQ3_XXS.gguf" \
+      -ngl 99 --n-cpu-moe "${NCMOE:-40}" -c 32768 -ctk q8_0 -ctv q8_0 \
+      -b 2048 -ub 2048 "$@" ;;
+  laguna)     # Poolside Laguna S 2.1 118B-A8B (Agentic-Coding-Spezialist); Support frisch
+    exec llama-server "${COMMON[@]}" \
+      -m "$M/Laguna-S-2.1-IQ3_XXS.gguf" \
+      -ngl 99 --n-cpu-moe "${NCMOE:-40}" -c 32768 -ctk q8_0 -ctv q8_0 \
+      -b 2048 -ub 2048 "$@" ;;
+  mistral4)   # Mistral Small 4 119B-A6.5B (Tempo-Gegenpol, Devstral integriert)
+    exec llama-server "${COMMON[@]}" \
+      -m "$M/Mistral-Small-4-119B-2603.i1-IQ3_XXS.gguf" \
+      -ngl 99 --n-cpu-moe "${NCMOE:-40}" -c 32768 -ctk q8_0 -ctv q8_0 \
+      -b 2048 -ub 2048 "$@" ;;
   *) echo "unknown model $MODEL"; exit 2 ;;
 esac

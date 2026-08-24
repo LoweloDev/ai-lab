@@ -62,3 +62,50 @@
 {"model":"dsh-v4-flash","task":"agora-A6-scorer-scratch","grade":"PASS","seconds":582.4,"exit":0,"changed":" 1 file changed, 3 insertions(+), 3 deletions(-)"}
 {"model":"dsh-v4-pro","task":"agora-A6-scorer-scratch","grade":"PASS","seconds":1030.7,"exit":0,"changed":""}
 {"model":"oc-gemini37f","task":"agora-A6-scorer-scratch","grade":"PASS","seconds":359.4,"exit":0,"changed":" 1 file changed, 1 insertion(+), 1 deletion(-)"}
+{"model":"cc-opus48","task":"aiux-U1-paging","grade":"PASS","seconds":23.6,"exit":0,"changed":" 1 file changed, 1 insertion(+), 1 deletion(-)"}
+{"model":"qwen38-vulkan","task":"agora-A4-feed","grade":"PASS","seconds":149.7,"exit":0,"changed":" 2 files changed, 2 insertions(+), 2 deletions(-)"}
+{"model":"cc-opus5","task":"aiux-U1-paging","grade":"PASS","seconds":34.6,"exit":0,"changed":" 1 file changed, 1 insertion(+), 1 deletion(-)"}
+{"model":"cc-opus5","task":"agora-A1-gate","grade":"PASS","seconds":85.9,"exit":0,"changed":" 2 files changed, 4 insertions(+), 4 deletions(-)"}
+{"model":"cc-opus5","task":"agora-A2-jsonld","grade":"PASS","seconds":67.8,"exit":0,"changed":" 1 file changed, 5 insertions(+), 1 deletion(-)"}
+{"model":"cc-opus5","task":"agora-A3-hls","grade":"PASS","seconds":66.7,"exit":0,"changed":" 4 files changed, 18 insertions(+), 17 deletions(-)"}
+{"model":"agy-37flash","task":"aiux-U1-paging","grade":"PASS","seconds":42.7,"exit":0,"changed":" 1 file changed, 1 insertion(+), 1 deletion(-)"}
+{"model":"cc-opus5","task":"aiux-U2-denytools","grade":"PASS pass=52 fail=0","seconds":373.4,"exit":0,"changed":" 4 files changed, 57 insertions(+), 24 deletions(-)"}
+{"model":"cc-opus5","task":"agora-A4-feed","grade":"PASS","seconds":61.5,"exit":0,"changed":" 1 file changed, 1 insertion(+), 1 deletion(-)"}
+{"model":"oc-v4-flash","task":"agora-A5-batcher-scratch","grade":"FAIL tests-red","seconds":1.9,"exit":1,"changed":""}
+{"model":"oc-v4-flash","task":"agora-A6-scorer-scratch","grade":"FAIL tests-red","seconds":1.8,"exit":1,"changed":""}
+{"model":"oc-v4-pro","task":"agora-A5-batcher-scratch","grade":"FAIL tests-red","seconds":1.8,"exit":1,"changed":""}
+{"model":"oc-v4-pro","task":"agora-A6-scorer-scratch","grade":"FAIL tests-red","seconds":1.9,"exit":1,"changed":""}
+{"model":"cc-opus5","task":"agora-A5-batcher-scratch","grade":"FAIL tests-red","seconds":517.8,"exit":0,"changed":" 1 file changed, 3 insertions(+), 3 deletions(-)"}
+{"model":"oc-v4-flash","task":"agora-A5-batcher-scratch","grade":"FAIL tests-red","seconds":224.9,"exit":0,"changed":" 1 file changed, 3 insertions(+), 3 deletions(-)"}
+{"model":"agy-37flash","task":"agora-A1-gate","grade":"PASS","seconds":75.2,"exit":0,"changed":" 1 file changed, 1 insertion(+), 1 deletion(-)"}
+{"model":"qwen38-vulkan","task":"agora-A5-batcher-scratch","grade":"FAIL tests-red","seconds":1830.0,"exit":137,"changed":" 1 file changed, 3 insertions(+), 3 deletions(-)"}
+{"model":"agy-37flash","task":"agora-A2-jsonld","grade":"PASS","seconds":81.2,"exit":0,"changed":" 1 file changed, 2 insertions(+), 1 deletion(-)"}
+{"model":"agy-37flash","task":"agora-A3-hls","grade":"PASS","seconds":107.7,"exit":0,"changed":" 3 files changed, 11 insertions(+), 10 deletions(-)"}
+{"model":"agy-37flash","task":"aiux-U2-denytools","grade":"PASS pass=52 fail=0","seconds":144.6,"exit":0,"changed":" 4 files changed, 40 insertions(+), 10 deletions(-)"}
+{"model":"qwen38-vulkan","task":"agora-A6-scorer-scratch","grade":"FAIL tests-red","seconds":289.6,"exit":1,"changed":""}
+{"model":"agy-37flash","task":"agora-A4-feed","grade":"PASS","seconds":79.3,"exit":0,"changed":" 1 file changed, 1 insertion(+), 1 deletion(-)"}
+{"model":"muse-vulkan","task":"agora-A4-feed","grade":"PASS","seconds":103.6,"exit":0,"changed":" 2 files changed, 2 insertions(+), 2 deletions(-)"}
+{"model":"oc-v4-flash","task":"agora-A6-scorer-scratch","grade":"PASS","seconds":485.3,"exit":0,"changed":" 1 file changed, 3 insertions(+), 3 deletions(-)"}
+{"model":"agy-37flash","task":"agora-A5-batcher-scratch","grade":"FAIL tests-red","seconds":186.2,"exit":0,"changed":" 1 file changed, 3 insertions(+), 3 deletions(-)"}
+{"model":"agy-37flash","task":"agora-A6-scorer-scratch","grade":"PASS","seconds":189.8,"exit":0,"changed":" 1 file changed, 3 insertions(+), 3 deletions(-)"}
+{"model":"agy-37flash-low","task":"aiux-U1-paging","grade":"PASS","seconds":23.4,"exit":0,"changed":" 1 file changed, 1 insertion(+), 1 deletion(-)"}
+{"model":"oc-v4-pro","task":"agora-A5-batcher-scratch","grade":"FAIL tests-red","seconds":394.9,"exit":0,"changed":" 1 file changed, 3 insertions(+), 3 deletions(-)"}
+{"model":"agy-37flash-low","task":"agora-A1-gate","grade":"PASS","seconds":27.9,"exit":0,"changed":" 1 file changed, 1 insertion(+), 1 deletion(-)"}
+{"model": "muse-vulkan", "task": "agora-A5-batcher-scratch", "grade": "FAIL tests-red", "seconds": 440.9, "exit": 0, "changed": " 1 file changed, 1 insertion(+), 1 deletion(-)"}
+{"model":"cc-opus5","task":"agora-A6-scorer-scratch","grade":"PASS","seconds":1518.9,"exit":0,"changed":" 1 file changed, 3 insertions(+), 3 deletions(-)"}
+{"model":"oc-v4-pro","task":"agora-A6-scorer-scratch","grade":"PASS","seconds":537.2,"exit":0,"changed":" 1 file changed, 3 insertions(+), 3 deletions(-)"}
+{"model":"cc-opus48","task":"agora-A1-gate","grade":"PASS","seconds":101.7,"exit":0,"changed":" 1 file changed, 1 insertion(+), 1 deletion(-)"}
+{"model":"muse-vulkan","task":"agora-A6-scorer-scratch","grade":"FAIL tests-red","seconds":576.6,"exit":0,"changed":" 1 file changed, 3 insertions(+), 3 deletions(-)"}
+{"model":"cc-opus48","task":"agora-A2-jsonld","grade":"PASS","seconds":159.6,"exit":0,"changed":" 1 file changed, 2 insertions(+), 1 deletion(-)"}
+{"model":"qwen36moe-vulkan","task":"agora-A4-feed","grade":"PASS","seconds":156.4,"exit":0,"changed":" 2 files changed, 2 insertions(+), 2 deletions(-)"}
+{"model":"cc-opus48","task":"agora-A3-hls","grade":"PASS","seconds":70.6,"exit":0,"changed":" 2 files changed, 14 insertions(+), 13 deletions(-)"}
+{"model":"qwen36moe-vulkan","task":"agora-A5-batcher-scratch","grade":"FAIL tests-red","seconds":243.1,"exit":1,"changed":""}
+{"model":"cc-opus48","task":"aiux-U2-denytools","grade":"PASS pass=52 fail=0","seconds":279.7,"exit":0,"changed":" 3 files changed, 35 insertions(+), 3 deletions(-)"}
+{"model":"cc-opus48","task":"agora-A4-feed","grade":"PASS","seconds":48.0,"exit":0,"changed":" 2 files changed, 2 insertions(+), 2 deletions(-)"}
+{"model":"cc-opus48","task":"agora-A5-batcher-scratch","grade":"FAIL tests-red","seconds":521.5,"exit":0,"changed":" 1 file changed, 3 insertions(+), 3 deletions(-)"}
+{"model":"qwen36moe-vulkan","task":"agora-A6-scorer-scratch","grade":"FAIL tests-red","seconds":656.1,"exit":1,"changed":" 1 file changed, 3 insertions(+), 3 deletions(-)"}
+{"model":"cc-opus48","task":"agora-A6-scorer-scratch","grade":"PASS","seconds":777.4,"exit":0,"changed":" 1 file changed, 3 insertions(+), 3 deletions(-)"}
+{"model":"codernext-vulkan","task":"agora-A4-feed","grade":"FAIL tests-red","seconds":574.1,"exit":0,"changed":" 2 files changed, 35 insertions(+), 10 deletions(-)"}
+{"model":"codernext-vulkan","task":"agora-A5-batcher-scratch","grade":"FAIL tests-red","seconds":300.5,"exit":1,"changed":" 1 file changed, 1 insertion(+), 1 deletion(-)"}
+{"model":"codernext-vulkan","task":"agora-A6-scorer-scratch","grade":"PASS","seconds":505.8,"exit":0,"changed":" 1 file changed, 3 insertions(+), 3 deletions(-)"}
+{"model":"qwen38-vulkan","task":"agora-A5-batcher-scratch","grade":"FAIL tests-red","seconds":3630.0,"exit":137,"changed":" 1 file changed, 3 insertions(+), 3 deletions(-)"}

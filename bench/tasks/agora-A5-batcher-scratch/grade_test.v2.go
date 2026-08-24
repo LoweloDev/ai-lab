@@ -1,12 +1,23 @@
 package feed
 
-// Bench grading for agora-A5-batcher-scratch. This file is copied into
-// agora-backend/internal/feed/ as zz_bench_grade_test.go at grade time and removed
-// afterwards. Every property below is deliberately design-agnostic: it encodes only
-// behavior that any reasonable reading of the product brief implies (variety, live
-// cadence, viewport pacing, conservation, empty-input safety) and never the shape of
-// one particular implementation. All identifiers are grade-prefixed to avoid colliding
-// with helpers the agent may have defined in their own new test files.
+// Bench grading for agora-A5-batcher-scratch — Staging-Fassung v2 (Audit 24./25.08.2026).
+// Basis ist die installierte grade_test.go (Properties (c) und (d) bereits über alle
+// Anordnungen permutiert). Zusätzlich:
+//   - Property (b) auf ihre eigene Begründung zurückgeschnitten: kein Batch MIT Inhalt
+//     (eine leere Leerzustands-Seite ist brief-konform) — Befund F12
+//   - Property (e2) Live-Kadenz bei reichlich Text, unter allen 720 Anordnungen — Befund F9
+// Property (c) bleibt UNVERÄNDERT streng (defensive Lesart: erste Handy-Seite trägt das
+// Score-Maximum unter allen 24 Anordnungen). Die Vertragslesart (Eingabe gilt als sortiert)
+// liegt daneben als grade_test.v2-vertrag.go und wird nur per Flag installiert
+// (Entscheidung P5, audit-report.md 4.3).
+//
+// This file is copied into agora-backend/internal/feed/ as zz_bench_grade_test.go at grade
+// time (into a throw-away copy of the workspace, see grade.v2.sh). Every property below is
+// deliberately design-agnostic: it encodes only behavior that any reasonable reading of the
+// product brief implies (variety, live cadence, viewport pacing, conservation, empty-input
+// safety) and never the shape of one particular implementation. All identifiers are
+// grade-prefixed to avoid colliding with helpers the agent may have defined in their own
+// new test files.
 
 import (
 	"testing"
@@ -83,20 +94,24 @@ func TestGradeConservation(t *testing.T) {
 }
 
 // Property (b) — empty input. WHY: the brief says the batcher must not crash when there
-// is nothing to show; with no items there are no pages to assemble, so no batches with
-// content may come back (a panic fails this test on its own).
+// is nothing to show; with no items there are no pages to assemble, so no batch WITH
+// content may come back (a panic fails this test on its own). An explicit empty-state
+// batch without items is allowed — the brief only demands "nicht abstürzen" (F12).
 func TestGradeEmptyInputProducesNoBatches(t *testing.T) {
-	if batches := BuildBatches(nil, gradeDesktopOptions(3)); len(batches) != 0 {
-		t.Fatalf("nil input produced %d batches, want none", len(batches))
+	for _, batch := range BuildBatches(nil, gradeDesktopOptions(3)) {
+		if len(batch.Items) != 0 {
+			t.Fatalf("nil input produced a batch with %d items, want no content", len(batch.Items))
+		}
 	}
-	empty := BuildBatches([]RankedItem{}, BatchOptions{
+	for _, batch := range BuildBatches([]RankedItem{}, BatchOptions{
 		Mode:           ModeForYou,
 		Viewport:       ViewportMobile,
 		UserConfidence: 0.1,
 		PageSize:       3,
-	})
-	if len(empty) != 0 {
-		t.Fatalf("empty input produced %d batches, want none", len(empty))
+	}) {
+		if len(batch.Items) != 0 {
+			t.Fatalf("empty input produced a batch with %d items, want no content", len(batch.Items))
+		}
 	}
 }
 
@@ -230,6 +245,38 @@ func TestGradeNoBackToBackLiveTopSlotOutsideLiveMode(t *testing.T) {
 			}
 		}
 	}
+}
+
+// Property (e2) — live cadence when text is plentiful. WHY: a per-page cap ("at most one
+// live room per page") does not implement the brief's rule by itself; with four text
+// debates in the pool, page 2 must not open with a live room again. Checked under all
+// 720 input arrangements (F9). Not extended to mobile: the reference batcher only applies
+// the cadence to feature layouts.
+func TestGradeNoBackToBackLiveTopSlotWhenTextIsPlentiful(t *testing.T) {
+	base := []RankedItem{
+		gradeItem(1, ItemLiveRoom, 100, "a"),
+		gradeItem(2, ItemTextDebate, 95, "b"),
+		gradeItem(3, ItemTextDebate, 94, "c"),
+		gradeItem(4, ItemLiveRoom, 93, "d"),
+		gradeItem(5, ItemTextDebate, 92, "e"),
+		gradeItem(6, ItemTextDebate, 91, "f"),
+	}
+	gradePermute(len(base), func(order []int) {
+		items := make([]RankedItem, len(base))
+		for i, idx := range order {
+			items[i] = base[idx]
+		}
+		batches := BuildBatches(items, gradeDesktopOptions(3))
+		for i := 0; i+1 < len(batches); i++ {
+			if len(batches[i].Items) == 0 || len(batches[i+1].Items) == 0 {
+				continue
+			}
+			if batches[i].Items[0].Candidate.Type == ItemLiveRoom &&
+				batches[i+1].Items[0].Candidate.Type == ItemLiveRoom {
+				t.Fatalf("input order %v: batches %d and %d both put a live room on top although four text debates were available", order, i, i+1)
+			}
+		}
+	})
 }
 
 // Property (f) — page size. WHY: the brief says desktop shows a small handful per page

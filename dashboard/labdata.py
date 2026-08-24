@@ -182,6 +182,71 @@ def read_polyglot(show_hidden=False):
                          'status': status, 'running': status == 'läuft',
                          'hidden': hidden, 'newest': newest,
                          'langs': langs, 'exercises': exercises})
+    # ---- Zweite Quelle: bench/polyglot-oc/runs (OC-/agy-/Claude-Harness-Läufe) ----
+    poly_oc = os.path.join(BENCH, 'polyglot-oc', 'runs')
+    if os.path.isdir(poly_oc):
+        for label in sorted(os.listdir(poly_oc)):
+            p = os.path.join(poly_oc, label)
+            if not os.path.isdir(p):
+                continue
+            exercises, newest = [], 0.0
+            for fp in glob.glob(os.path.join(p, '*', '*', 'result.json')):
+                try:
+                    d = json.load(open(fp, encoding='utf-8'))
+                except (OSError, json.JSONDecodeError):
+                    continue
+                o = d.get('tests_outcomes') or []
+                st = ('err' if d.get('error') else
+                      'p1' if (o and o[0]) else
+                      'p2' if True in o else 'fail')
+                exercises.append({'name': d.get('name') or '?',
+                                  'lang': d.get('lang') or fp.split(os.sep)[-3],
+                                  'status': st, 'tries': len(o),
+                                  'duration': round(d.get('seconds') or 0, 1)})
+                try:
+                    newest = max(newest, os.path.getmtime(fp))
+                except OSError:
+                    pass
+            exercises.sort(key=lambda e: (e['lang'], e['name']))
+            n = len(exercises)
+            p1 = sum(1 for e in exercises if e['status'] == 'p1')
+            p2 = p1 + sum(1 for e in exercises if e['status'] == 'p2')
+            langs = {}
+            for e in exercises:
+                L = langs.setdefault(e['lang'], {'n': 0, 'p1': 0, 'p2': 0})
+                L['n'] += 1
+                if e['status'] == 'p1':
+                    L['p1'] += 1; L['p2'] += 1
+                elif e['status'] == 'p2':
+                    L['p2'] += 1
+            is_val = label.startswith('val-')
+            expected = None if is_val else 73
+            has_summary = os.path.isfile(os.path.join(p, 'summary.json'))
+            fresh = newest and (now - newest) < 1800
+            if expected and n >= expected and has_summary:
+                status = 'fertig'
+            elif fresh:
+                status = 'läuft'
+            elif is_val:
+                status = 'verworfen'
+            elif has_summary:
+                status = 'fertig'
+            else:
+                status = 'verworfen'
+            a = annot.get('oc:' + label) or {}
+            hidden = bool(a.get('hidden')) or (is_val and 'hidden' not in a) \
+                or (status == 'verworfen' and 'hidden' not in a)
+            runs.append({'dir': 'oc:' + label,
+                         'label': a.get('label') or label,
+                         'note': a.get('note', 'eigener Harness-Lauf (nicht Aider)'),
+                         'started': time.strftime('%Y-%m-%d %H:%M',
+                                                  time.localtime(os.path.getmtime(p))),
+                         'n': n, 'expected': expected, 'pass1': p1, 'pass2': p2,
+                         'duration': round(sum(e['duration'] for e in exercises), 1),
+                         'status': status, 'running': status == 'läuft',
+                         'hidden': hidden, 'newest': newest,
+                         'langs': langs, 'exercises': exercises})
+
     runs.sort(key=lambda r: r['dir'], reverse=True)
     n_hidden = sum(1 for r in runs if r['hidden'])
     if not show_hidden:

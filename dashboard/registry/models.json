@@ -101,6 +101,63 @@
       },
       "notes": "Größtes Coding-Modell (80B-A3B MoE). Attention + shared experts auf der GPU, routed experts per mmap im RAM (--n-cpu-moe 26).",
       "vram": "VRAM + RAM — bleibt unter ~19 GB VRAM"
+    },
+    {
+      "id": "mistral4",
+      "seed": false,
+      "kind": "base",
+      "name": "Mistral Small 4 119B-A6.5B",
+      "file": "Mistral-Small-4-119B-2603.i1-IQ3_XXS.gguf",
+      "hf_repo": "mradermacher/Mistral-Small-4-119B-2603-i1-GGUF",
+      "hf_file": "Mistral-Small-4-119B-2603.i1-IQ3_XXS.gguf",
+      "args": {
+        "ctx": 32768,
+        "kv": "q8_0",
+        "ngl": 99,
+        "ncmoe": 40,
+        "batch": 2048,
+        "ubatch": 2048
+      },
+      "notes": "Kandidaten-Runde 25.08. (Tempo-Gegenpol, Devstral integriert, Apache 2.0). imatrix IQ3_XXS 42,7 GiB — kleinste Quant, die ins RAM+VRAM-Budget passt. Fallback IQ2_M.",
+      "vram": "VRAM + RAM (Experten per mmap, --n-cpu-moe 40)"
+    },
+    {
+      "id": "qwen35",
+      "seed": false,
+      "kind": "base",
+      "name": "Qwen3.5-122B-A10B",
+      "file": "Qwen3.5-122B-A10B.i1-IQ3_XXS.gguf",
+      "hf_repo": "mradermacher/Qwen3.5-122B-A10B-i1-GGUF",
+      "hf_file": "Qwen3.5-122B-A10B.i1-IQ3_XXS.gguf",
+      "args": {
+        "ctx": 32768,
+        "kv": "q8_0",
+        "ngl": 99,
+        "ncmoe": 40,
+        "batch": 2048,
+        "ubatch": 2048
+      },
+      "notes": "Kandidaten-Runde 25.08. (Referenz der 100-130B-Klasse, SWE-V 72, multimodal — mmproj hier nicht geladen). imatrix IQ3_XXS 43,9 GiB.",
+      "vram": "VRAM + RAM (Experten per mmap, --n-cpu-moe 40)"
+    },
+    {
+      "id": "laguna",
+      "seed": false,
+      "kind": "base",
+      "name": "Laguna S 2.1 118B-A8B",
+      "file": "Laguna-S-2.1-IQ3_XXS.gguf",
+      "hf_repo": "bartowski/Laguna-S-2.1-GGUF",
+      "hf_file": "Laguna-S-2.1-IQ3_XXS.gguf",
+      "args": {
+        "ctx": 32768,
+        "kv": "q8_0",
+        "ngl": 99,
+        "ncmoe": 40,
+        "batch": 2048,
+        "ubatch": 2048
+      },
+      "notes": "Kandidaten-Runde 25.08. (Poolside, Agentic-Coding-Spezialist: TB-2.1 70, SWE-Pro 59 — Herstellerzahlen). IQ3_XXS 46,1 GiB = Kante des Budgets; llama.cpp-Support seit 22.07., Vulkan ungetestet.",
+      "vram": "VRAM + RAM (Experten per mmap, --n-cpu-moe 40) — 46 GiB, Grenzbereich"
     }
   ],
   "catalog": [

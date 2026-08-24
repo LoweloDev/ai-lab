@@ -78,3 +78,99 @@ Konkrete Slips in (e), damit klar ist, wie knapp das war: bowling-go `rolls[19]`
 - Go-Panic-Traces vor dem Zurückfüttern auf die ersten Frames kürzen — 22k-Token-Kontexte aus Goroutine-Dumps sind reines Rauschen.
 - robot-simulator: Retry bzw. max_tokens auf dem Server prüfen; das war kein Modell-Fail.
 - Für markdown: „bestehende Implementierung behalten, minimal refactoren" — das Modell hat eine funktionierende 93-Zeilen-Lösung durch eine 11k-Token-Neuschrift mit neuen Bugs ersetzt.
+
+## Nachtrag 24.08. ~21:55 — A5-Ambiguität ist jetzt EINSTIMMIG (5/5 Cloud+Frontier)
+
+`TestGradeMobileOneItemPerBatchBestFirst` („first mobile batch item score = 40, want the
+highest-scored item first") ist bei **allen** bisherigen A5-Läufen der einzige rote Test:
+dsh-v4-flash, dsh-v4-pro, oc-gemini37f, oc-v4-flash **und cc-opus5 (xhigh)**. Alle Modelle
+— inklusive der Abo-Messlatte — lesen den Brief als „Eingabe kommt sortiert" (Vertrag
+nutzen), der Grader verlangt defensives Selbst-Sortieren. Opus 5 hat dabei from scratch
+gebaut (batching.go + eigene Tests, alle 12 eigenen Property-Tests grün) und exakt
+dieselbe Interpretation gewählt.
+Konsequenz: Der Befund „mehrdeutige Spec, nicht Modellschwäche" ist damit maximal
+abgesichert. Tobias' Regrade-Entscheidung (defensiv sortieren vs. Vertrag vertrauen)
+steht noch aus — bei Einstimmigkeit inkl. Frontier-Modell spricht alles für eine
+Spec-Korrektur bzw. Doppel-Wertung.
+
+Update ~21:57: agy-37flash (Antigravity-Abo, effort=high) macht die Einstimmigkeit zu **6/6** —
+gleiche Property, gleiche Zeile (zz_bench_grade_test.go:130). Kein einziges Cloud-/Frontier-Modell
+liest den Brief als "defensiv selbst sortieren".
+
+Update ~22:00 — muse-vulkan "besteht" A5: **Handspiel-Tor, kein echtes.** batches.go sortiert nie
+und wählt nie nach Score; die Diversity-Heuristik nimmt stets das erste Element NACH dem Kopf mit
+frischem Topic. In der fixen Testanordnung (40,90,70,60) sitzt das Maximum zufällig genau dort —
+Permutationstest (90 zuerst) lässt TestGradeMobileOneItemPerBatchBestFirst sofort durchfallen.
+KEIN Tampering (Guard sauber, Tests waren dem Modell nie sichtbar) — es ist eine Lücke des
+Graders: fixe Anordnung in einem Property-Test. Der offizielle PASS bleibt stehen (Schiri-Prinzip,
+alle Modelle sahen denselben Test), wird im Bericht aber als Glückstreffer gekennzeichnet.
+Die 7/7-Einstimmigkeit der Cloud-Riege bleibt unberührt: auch muse sortiert NICHT defensiv.
+TODO nach der Kampagne: grade_test.go härten (mehrere Permutationen je Property).
+
+Update ~22:12 — **Tor aberkannt** (Tobias' Anweisung: "wenn das kein Pass war, ist es auch kein
+Pass"). grade_test.go gehärtet: Properties (c) Mobile-Best-First und (d) Topic-Mix laufen jetzt
+über ALLE 24 Eingabe-Permutationen (Helper gradePermute; künftige Grades nutzen die Härtung
+automatisch, da grade.sh die Datei je Grading frisch kopiert). Alle 9 vorhandenen A5-Workspaces
+mit dem scharfen Grader neu bewertet: **9x FAIL** — nur muse kippte (PASS→FAIL), alle übrigen
+Urteile unverändert. Der muse-Eintrag wurde IN PLACE in results.jsonl korrigiert (kein neuer Lauf;
+Backup: results.jsonl.bak-regrade). A5 ist damit offiziell von niemandem bestanden.
+Geplant (Tobias, ~22:05): adversarialer Validierungslauf über ALLE Grader der Suite, sobald die
+Nachtketten durch sind — je Task ein Angreifer, der den Grader mit legalen Falsch-Lösungen zu
+täuschen versucht; Härtungen dann wie hier + Korrekturen in place.
+
+Update ~22:36 — codernext (80B) reißt als EINZIGES Modell der Nacht A4: Der gepflanzte Bug
+(topics[topic] = false in sharesTopic) steht unveraendert im Code — stattdessen wurde die
+Auswahllogik drumherum umgebaut (topicCounts-Rework, 35 Zeilen) und damit zusaetzlich die
+Live-Kadenz gebrochen (2 Tests rot statt 1). Klassisches Symptom-Umbauen statt Ursache-Finden;
+bemerkenswert, weil selbst die 27-35B-Lokalen den Einzeiler fanden.
+
+Update ~22:46 — codernext (80B) A5: substantieller FAIL ohne Infra-Einfluss (0 Context-Overflows,
+batches.go gebaut). Reisst aber DREI Properties statt der einen Ambiguitaets-Falle: Mobile-Best-
+First UND Topic-Mix UND Live-Kadenz. Damit qualitativ schwaecher als die Cloud-Riege (die nur an
+der mehrdeutigen Sortier-Property scheitert) und als muse (Topic-Mix/Live sassen dort). Kein Retry
+noetig (echte Abgabe, kein Timeout/Leerlauf).
+
+## Nachtrag 24.08. ~23:58 — Polyglot: drei Freilose im Benchmark-Set + Auth-Leichen
+Die Go-Uebungen **counter** ("no tests to run"), **ledger** und **markdown** (Refactoring-Aufgaben, Code
+bereits gruen) bestehen `go test` UNBERUEHRT — empirisch am pristine Stub geprueft. Das ist ein Artefakt des
+Aider-Polyglot-Sets, das alle Harness-Laeufe gleich betrifft (agy/dsflash haben dort echte Tokens ausgegeben,
+haetten aber auch mit Nichtstun bestanden). Konsequenz fuer den Bericht: jedes Polyglot-Ergebnis als
+"x/70 echte + 3 Freilose" lesen; Rankings unveraendert. Zweite Konsequenz: Die Auth-Bereinigung der Opus-
+Laeufe (Kriterium 0 Tokens UND kein PASS) hat genau diese drei bei Opus 5 und counter/ledger bei Opus 4.8
+uebersehen (is_error:true, 0 Tokens, trotzdem gruen). Geloescht und per Resume neu gefahren, damit jede
+Opus-Zeile ein echter Modellversuch ist. Kriterium im Runner-Waechter bleibt korrekt (0 Tokens + rc!=0 =>
+kein result.json), weil der gehaertete Runner solche Faelle gar nicht erst schreibt.
+Ausnahme: cc-opus48 go/robot-simulator hat 0 Tokens, ist aber ein ECHTER PASS (robot_simulator.go vom
+Modell geaendert, Tests identisch, pristine Stub faellt durch) — nur der JSON-Envelope fehlt (0 Bytes,
+vermutlich Versuchs-Timeout nach getaner Arbeit). Bleibt stehen; Token/Kosten dieser Uebung sind
+untererfasst.
+Korrektur 25.08. 00:10: Der Vergiftungs-Waechter im Claude-Polyglot-Runner hat bei cc-opus5 go/ledger
+einen Versuchs-Timeout (rc 124, Envelope beim Kill verloren, 0 Tokens) als Auth-Ausfall gewertet und
+abgebrochen (Fehlalarm). Kriterium verschaerft auf die echte Auth-Signatur: 0 Tokens UND rc 1 UND <15 s.
+Timeouts zaehlen wieder als regulaere (gescheiterte) Versuche mit anschliessendem Testlauf — Token/Kosten
+solcher Uebungen sind untererfasst (Envelope fehlt).
+
+## Nachtrag 25.08. ~00:40 — zwei Runner-Bugs im Polyglot-Versuch-2 (gefixt, betroffene Uebungen neu)
+1. **Prompt beginnt mit "-"**: Go-Testausgaben starten mit "--- FAIL: Test…"; der zweite Prompt
+   (Test-Tail + aider-Vorlage) wurde von der Claude-CLI als Option gelesen ("unknown option '--- FAIL…'")
+   — Versuch 2 fand nie statt. Betroffen: nur Go-Uebungen mit Test-FAIL im 1. Versuch (Build-Fehler
+   beginnen mit "#" und waren ok). Nachweislich: cc-opus48 go/trinary. Fix: Kopfzeile "Test output:" vor
+   dem Tail in run-polyglot-{claude,oc}.sh (agy-Runner nicht betroffen, Prompt 2 beginnt dort mit der
+   Aufgabe). Semantik-Abweichung zu aider: eine Kopfzeile, sonst wortgleich.
+2. **Container-Namenskollision**: nach Timeout-Kill von Versuch 1 hing der Container noch, Versuch 2
+   scheiterte mit rc 125 "name already in use". Nachweislich: oc-dsflash go/alphametics. Fix: podman rm -f
+   vor jedem Versuch (Claude- und OC-Runner).
+Beide Uebungen wurden geloescht und per Resume neu gefahren (Ergebnis siehe summary.json). Alle anderen
+Versuch-2-Faelle geprueft: rcs regulaer.
+Ergebnis der Nachlaeufe (00:30): cc-opus48 go/trinary PASS (V1) -> 67/73 p1 (konservativ 66), 73/73 p2;
+oc-dsflash go/alphametics PASS (V1) -> 63/73 p1, 70/73 p2 (0,24 $). Endstand Agent-Harness-Polyglot:
+agy-37flash 73/73 p1 · cc-opus5 73/73 p1 · cc-opus48 66-67/73 p1, 73/73 p2 · oc-dsflash 63/73 p1, 70/73 p2.
+Fussnote fuer alle: 3 Freilose (counter/ledger/markdown) im Set.
+
+## Nachtrag 25.08. ~01:25 — qwen38 A5-Retry (64k, 60 min): echtes Kapazitaets-FAIL, "Analyse-Paralyse"
+Mit 64k Kontext keine Overflows mehr (0 Treffer), trotzdem keine Abgabe: 54 Schritte, davon 43x read,
+19x grep, 3x glob, 9x bash — und KEIN einziger write/edit. Das Modell hat 60 Minuten lang das Repo und
+die contract/*.md-Dokumente durchsucht ("consecutive", "top slot", "live room" …), also die Spezifikation
+immer weiter ergaenzt statt zu bauen. Kein Infra-Einfluss mehr -> Urteil FAIL (keine Abgabe) bleibt.
+Befund fuer den Bericht: Bei From-Scratch-Aufgaben mit vagem Brief kippt die 27B-Klasse in reine
+Recherche-Schleifen; die Cloud-Modelle bauen nach 5-10 Lesezugriffen und iterieren mit Tests.

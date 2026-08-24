@@ -1,7 +1,14 @@
 # Fahrplan (Stand 24.08. ~19:15, Deadline 25.08. ~12:00)
 
 MORGEN-NACHZÜGLER (nach Polyglot-Ende, GPU frei):
-- **A4+A5+A6 für die LOKALEN Modelle** (qwen38, muse, qwen36moe; codernext optional):
+- **A4+A5+A6 für die LOKALEN Modelle** (Tobias 24.08. ~23:30: Qwen direkt als
+  **qwen38-vision** servieren — Vision kostet nichts, Label bleibt qwen38-vulkan;
+  dazu muse, qwen36moe; **codernext FIX als vierter, ZULETZT** (Tobias 24.08. ~23:45:
+  **ALLES Ungetestete**: Suite A4/A5/A6, voller Polyglot, DOM-Tests (dom-agent info+form),
+  UX-DOM-Review, llama-bench-Tiefenmatrix (fehlt komplett — Dashboard sagt „keine Messung").
+  Vision entfällt (kein mmproj für Coder-Next). Begründung: Suite-Speed war fast 35B-Klasse
+  [3B aktiv]. Polyglot-80B ≈ 4–5 h GPU → läuft über die 12-Uhr-Grenze hinaus fertig; Skripte
+  brauchen keine Session, Ergebnis erscheint automatisch im Dashboard):
   je Modell `serve.sh <m> vulkan`, dann `bench/run-task.sh <label> agora-A4-feed`,
   `... agora-A5-batcher-scratch 1800`, `... agora-A6-scorer-scratch 1800`.
   Cloud-Referenz: A4 3/3 PASS · A5 3/3 FAIL (einstimmig an der sortiert/sortierbar-Ambiguität,
@@ -68,9 +75,23 @@ zum Selbst-Testen künftiger Modelle, Wiki-Tab (alle Docs) + Guide für neue Ben
 5b. OPTIONAL (nach Deadline, Tobias-Idee 24.08. abends): **Gemini-Abo vs. API vergleichen** —
    Googles Gemini CLI als drittes Harness andocken (Muster: run-task-dsh.sh; npm @google/gemini-cli
    in Containervariante, Abo-Auth = einmaliger OAuth auf dem Host, ~/.gemini mounten). Fragestellung
-   ist Kosten/Quotas, nicht Qualität (gleiches Modell). Suite reicht als Vergleich.
+   ist Kosten/Quotas, nicht Qualität (gleiches Modell). Suite als Vergleich + auf Tobias' Wunsch
+   (24.08. ~0:15) auch ein **Polyglot-Lauf via Gemini CLI** (Runner nach dem Muster von
+   bench/polyglot-oc bauen; Kernfrage: übersteht die Abo-Quota 73 Übungen + wie ist die Wandzeit
+   vs. API?). Fakt zur Bindung: Abo-Kontingent läuft NUR über Googles eigene Tools (OAuth),
+   Fremd-Harnesses brauchen API-Key — Muster wie bei Anthropic.
    Generell bestätigt: OpenCode + API-Key ist der Standard-Harness-Weg.
 6. **Setup auf GitHub sichern** (Tobias' Wunsch): ~/ai-lab als Git-Repo initialisieren, .gitignore
    (models/, logs/, bench/runs/, bench/workspaces/, bench/aider/aider*, smoke-ws, Screenshots),
    privates Repo unter LoweloDev anlegen (`gh repo create ai-lab --private`), pushen. Rein: Skripte,
    Tasks+Grader, opencode-config, README, TODO, results.jsonl, failure-analysis.md.
+
+# Nachtrag 24.08. ~23:15 (Tobias): Kandidaten-Runde 100-130B-MoE
+- Tobias will "wenn nachher noch Zeit ist" Qwen3.5-122B-A10B (bzw. was er damit meint) auf dem
+  Setup testen (Experten-Offload wie beim 80B) + 1-2 aehnlich grosse MoE-Modelle ANDERER Marken
+  als Vergleich. Recherche-Agent laeuft; Ergebnis = Kandidatentabelle + Download-URLs.
+  Rechnung: 122B-A10B Q3_K_XL ~52 GiB (> RAM+VRAM ~50 GiB -> NVMe-Streaming) oder Q2 ~40 GiB;
+  tg-Erwartung ~8-14 t/s (3,3x aktive Parameter vs. 80B-A3B mit 28-41 t/s); Prefill wird der
+  Engpass bei agentischer Arbeit. Ehrlich: Experiment, kein Daily-Driver ohne 64 GiB RAM.
+- Reihenfolge: NACH den Qwen-Retries (GPU frei), Download (40-52 GiB je Modell) vorher.
+  serve.sh-Case anlegen (--n-cpu-moe hoeher als 26), llama-bench-Matrix, dann Suite A1-A6.

@@ -1,12 +1,13 @@
 package feed
 
-// Bench grading for agora-A5-batcher-scratch. This file is copied into
-// agora-backend/internal/feed/ as zz_bench_grade_test.go at grade time and removed
-// afterwards. Every property below is deliberately design-agnostic: it encodes only
-// behavior that any reasonable reading of the product brief implies (variety, live
-// cadence, viewport pacing, conservation, empty-input safety) and never the shape of
-// one particular implementation. All identifiers are grade-prefixed to avoid colliding
-// with helpers the agent may have defined in their own new test files.
+// Bench grading for agora-A5-batcher-scratch — Vertragslesart (Option A, audit-report.md 4.3,
+// Patch-Paket P5). Inhaltlich identisch zu audit-scratch/synth/a5-grade-v2_test.go:
+//   - Property (c) in Vertragslesart: RankCandidates liefert absteigend sortiert, der Batcher
+//     übernimmt die Eingabeordnung als Rangfolge (kein defensives Selbst-Sortieren, F8)
+//   - Property (b) auf die eigene Begründung zurückgeschnitten (kein Batch MIT Inhalt, F12)
+//   - Property (e2): Live-Kadenz bei reichlich Text, unter allen 720 Anordnungen (F9)
+// NICHT Standard: grade.v2.sh lädt diese Datei nur, wenn GRADE_HIDDEN darauf zeigt
+// (Umschaltung durch das Apply-Skript, sobald die Entscheidung P5 gefallen ist).
 
 import (
 	"testing"
@@ -54,9 +55,6 @@ func gradeMixedPool() []RankedItem {
 	}
 }
 
-// Property (a) — conservation. WHY: the brief demands that nothing may be lost and
-// nothing shown twice, so every ranked item appears in exactly one batch and no batch
-// is an empty page.
 func TestGradeConservation(t *testing.T) {
 	pool := gradeMixedPool()
 	batches := BuildBatches(pool, gradeDesktopOptions(3))
@@ -82,28 +80,25 @@ func TestGradeConservation(t *testing.T) {
 	}
 }
 
-// Property (b) — empty input. WHY: the brief says the batcher must not crash when there
-// is nothing to show; with no items there are no pages to assemble, so no batches with
-// content may come back (a panic fails this test on its own).
+// Property (b) — entschärft: keine Seite MIT Inhalt (eine leere Leerzustands-Seite ist erlaubt).
 func TestGradeEmptyInputProducesNoBatches(t *testing.T) {
-	if batches := BuildBatches(nil, gradeDesktopOptions(3)); len(batches) != 0 {
-		t.Fatalf("nil input produced %d batches, want none", len(batches))
+	for _, batch := range BuildBatches(nil, gradeDesktopOptions(3)) {
+		if len(batch.Items) != 0 {
+			t.Fatalf("nil input produced a batch with %d items, want no content", len(batch.Items))
+		}
 	}
-	empty := BuildBatches([]RankedItem{}, BatchOptions{
+	for _, batch := range BuildBatches([]RankedItem{}, BatchOptions{
 		Mode:           ModeForYou,
 		Viewport:       ViewportMobile,
 		UserConfidence: 0.1,
 		PageSize:       3,
-	})
-	if len(empty) != 0 {
-		t.Fatalf("empty input produced %d batches, want none", len(empty))
+	}) {
+		if len(batch.Items) != 0 {
+			t.Fatalf("empty input produced a batch with %d items, want no content", len(batch.Items))
+		}
 	}
 }
 
-// gradePermute calls fn with every permutation of the indices [0..n). Order-independent
-// properties are checked against ALL input arrangements so a lucky heuristic cannot pass
-// on the strength of one fixed ordering (hole found 24.08.: muse-vulkan, see
-// bench/failure-analysis.md).
 func gradePermute(n int, fn func(order []int)) {
 	order := make([]int, n)
 	for i := range order {
@@ -125,47 +120,32 @@ func gradePermute(n int, fn func(order []int)) {
 	rec(0)
 }
 
-// Property (c) — mobile pacing. WHY: the brief says phones show one item at a time, so
-// every mobile batch holds exactly one item; and a ranked feed reasonably leads with
-// its strongest item, so the first batch carries the maximum-score item (all scores are
-// distinct here, so no tie-handling is assumed). The property must hold for EVERY input
-// arrangement — the ranking is a property of the scores, not of the slice order.
 func TestGradeMobileOneItemPerBatchBestFirst(t *testing.T) {
-	base := []RankedItem{
-		gradeItem(1, ItemTextDebate, 40, "ai"),
+	items := []RankedItem{
 		gradeItem(2, ItemTextDebate, 90, "housing"),
 		gradeItem(3, ItemTextDebate, 70, "culture"),
 		gradeItem(4, ItemLiveRoom, 60, "science"),
+		gradeItem(1, ItemTextDebate, 40, "ai"),
 	}
-	gradePermute(len(base), func(order []int) {
-		items := make([]RankedItem, len(base))
-		for i, idx := range order {
-			items[i] = base[idx]
-		}
-		batches := BuildBatches(items, BatchOptions{
-			Mode:           ModeForYou,
-			Viewport:       ViewportMobile,
-			UserConfidence: 0.9,
-			PageSize:       3,
-		})
-
-		if len(batches) != len(items) {
-			t.Fatalf("input order %v: mobile batch count = %d, want %d (one item per page, nothing lost)", order, len(batches), len(items))
-		}
-		for index, batch := range batches {
-			if len(batch.Items) != 1 {
-				t.Fatalf("input order %v: mobile batch %d has %d items, want exactly 1", order, index, len(batch.Items))
-			}
-		}
-		if batches[0].Items[0].Candidate.ID != gradeID(2) {
-			t.Fatalf("input order %v: first mobile batch item score = %v, want the highest-scored item first", order, batches[0].Items[0].Score)
-		}
+	batches := BuildBatches(items, BatchOptions{
+		Mode:           ModeForYou,
+		Viewport:       ViewportMobile,
+		UserConfidence: 0.9,
+		PageSize:       3,
 	})
+	if len(batches) != len(items) {
+		t.Fatalf("mobile batch count = %d, want %d (one item per page, nothing lost)", len(batches), len(items))
+	}
+	for index, batch := range batches {
+		if len(batch.Items) != 1 {
+			t.Fatalf("mobile batch %d has %d items, want exactly 1", index, len(batch.Items))
+		}
+	}
+	if batches[0].Items[0].Candidate.ID != gradeID(2) {
+		t.Fatalf("first mobile batch item score = %v, want the highest-scored item first", batches[0].Items[0].Score)
+	}
 }
 
-// Property (d) — topic variety. WHY: the brief says a page must feel varied and the same
-// topic must not fill a page when alternatives exist; with three top items on one topic
-// and one alternative in the pool, the first desktop page must mix in a second topic.
 func TestGradeDesktopPageMixesTopicsWhenAlternativeExists(t *testing.T) {
 	base := []RankedItem{
 		gradeItem(1, ItemTextDebate, 100, "climate"),
@@ -199,11 +179,6 @@ func TestGradeDesktopPageMixesTopicsWhenAlternativeExists(t *testing.T) {
 	})
 }
 
-// Property (e) — live cadence. WHY: the brief says live rooms must not hog the top slot
-// of consecutive pages outside the live mode. Tolerance: a pair of consecutive live-top
-// batches is only a failure if a non-live item was still available when the later top
-// slot was filled (i.e. a non-live item appears in that batch or any later one), so a
-// forced all-live tail passes.
 func TestGradeNoBackToBackLiveTopSlotOutsideLiveMode(t *testing.T) {
 	items := []RankedItem{
 		gradeItem(1, ItemLiveRoom, 100, "ai"),
@@ -216,7 +191,7 @@ func TestGradeNoBackToBackLiveTopSlotOutsideLiveMode(t *testing.T) {
 
 	for i := 0; i+1 < len(batches); i++ {
 		if len(batches[i].Items) == 0 || len(batches[i+1].Items) == 0 {
-			continue // empty batches are property (a)'s problem
+			continue
 		}
 		if batches[i].Items[0].Candidate.Type != ItemLiveRoom ||
 			batches[i+1].Items[0].Candidate.Type != ItemLiveRoom {
@@ -232,9 +207,36 @@ func TestGradeNoBackToBackLiveTopSlotOutsideLiveMode(t *testing.T) {
 	}
 }
 
-// Property (f) — page size. WHY: the brief says desktop shows a small handful per page
-// and the caller hands the page size over in BatchOptions, so no desktop batch may
-// exceed the configured page size (checked for two configured sizes).
+// Property (e2) — Live-Kadenz bei reichlich Text. WHY: Die Pro-Seite-Kappung ("höchstens
+// ein Live-Raum je Seite") hilft hier nicht; mit vier Text-Beiträgen im Pool darf Seite 2
+// nicht wieder mit einem Live-Raum beginnen. Unter allen 720 Anordnungen.
+func TestGradeNoBackToBackLiveTopSlotWhenTextIsPlentiful(t *testing.T) {
+	base := []RankedItem{
+		gradeItem(1, ItemLiveRoom, 100, "a"),
+		gradeItem(2, ItemTextDebate, 95, "b"),
+		gradeItem(3, ItemTextDebate, 94, "c"),
+		gradeItem(4, ItemLiveRoom, 93, "d"),
+		gradeItem(5, ItemTextDebate, 92, "e"),
+		gradeItem(6, ItemTextDebate, 91, "f"),
+	}
+	gradePermute(len(base), func(order []int) {
+		items := make([]RankedItem, len(base))
+		for i, idx := range order {
+			items[i] = base[idx]
+		}
+		batches := BuildBatches(items, gradeDesktopOptions(3))
+		for i := 0; i+1 < len(batches); i++ {
+			if len(batches[i].Items) == 0 || len(batches[i+1].Items) == 0 {
+				continue
+			}
+			if batches[i].Items[0].Candidate.Type == ItemLiveRoom &&
+				batches[i+1].Items[0].Candidate.Type == ItemLiveRoom {
+				t.Fatalf("input order %v: batches %d and %d both put a live room on top although four text debates were available", order, i, i+1)
+			}
+		}
+	})
+}
+
 func TestGradeDesktopBatchesRespectConfiguredPageSize(t *testing.T) {
 	for _, pageSize := range []int{2, 3} {
 		batches := BuildBatches(gradeMixedPool(), gradeDesktopOptions(pageSize))

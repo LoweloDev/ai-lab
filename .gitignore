@@ -33,3 +33,14 @@ bench/aider/*
 bench/screenshot-*.png
 
 # Bewusst IM Repo: bench/results.jsonl — kleine, wertvolle Ergebnisdaten.
+
+# --- Nacht 24./25.08.: Zugangsdaten-Kopien, Zustandsdateien, Arbeitskopien ---
+bench/agy-auth-home/
+bench/polyglot-oc/runs/
+bench/audit-scratch/
+bench/robustness-battery/*/raw/
+bench/.apply-haertung.lock
+bench/.haertung-freigabe
+bench/.grader-haertung-done
+bench/.a5-lesart
+*.bak-*

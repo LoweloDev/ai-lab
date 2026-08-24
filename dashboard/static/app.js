@@ -311,6 +311,29 @@ function renderSuite(d) {
         </dl>
       </div>`;
   }
+  /* Gesamtzeit-Graph: Summe der jeweils letzten Versuche je Modell-Label */
+  const agg = d.labels.map(lbl => {
+    let sec = 0, ok = 0, n = 0;
+    for (const t of d.tasks) {
+      const e = last.get(lbl + ' ' + t);
+      if (!e) continue;
+      n++; sec += e.seconds || 0; if (e.pass) ok++;
+    }
+    return { lbl, sec, ok, n };
+  }).filter(a => a.n > 0).sort((a, b) => a.sec - b.sec);
+  const maxSec = Math.max(1, ...agg.map(a => a.sec));
+  const chart = !agg.length ? '' : `
+    <h3 class="sec">Gesamtzeit je Modell
+      <span class="muted small">Summe der letzten Versuche · Balkenfarbe: <span style="color:var(--accent)">alles PASS</span> / <span style="color:var(--warn)">mit FAILs</span> · Tasks abgedeckt: siehe n</span></h3>
+    <div class="card bars">${agg.map(a => `
+      <div class="bar-row">
+        <div class="bar-lbl">${esc(labelName(a.lbl))}
+          <span class="sub">${a.ok}/${a.n} PASS · ø ${fmtSec(a.sec / a.n)}/Task</span></div>
+        <div class="bar-track" title="${esc(labelName(a.lbl))}: ${fmtSec(a.sec)} über ${a.n} Tasks">
+          <div class="bar-fill${a.ok === a.n ? '' : ' part'}" style="width:${Math.max(2, a.sec / maxSec * 100)}%"></div>
+          <span class="bar-val">${fmtSec(a.sec)} <span class="muted">(n=${a.n})</span></span>
+        </div>
+      </div>`).join('')}</div>`;
   const oldTable = S.toggles.suiteOld ? `
     <h3 class="sec">Alle Rohzeilen (results.jsonl) — überholte gedimmt</h3>
     <div class="tbl-wrap"><table class="list">
@@ -331,7 +354,7 @@ function renderSuite(d) {
       <span class="muted">Es zählt der jeweils letzte Versuch · Zelle anklicken für Details</span>
     </div>
     <div class="tbl-wrap"><table class="matrix"><tr><th></th>${head}</tr>${rows}</table></div>
-    ${detail}${oldTable}`;
+    ${detail}${chart}${oldTable}`;
 }
 
 /* ================================================================ Polyglot */

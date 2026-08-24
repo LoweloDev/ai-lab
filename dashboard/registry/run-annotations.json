@@ -7,5 +7,18 @@
  },
  "2026-08-24-13-09-40--local-qwen-py-go-20260824-150938": {
   "note": "Abgebrochener Muse-Start (2/73) — ersetzt durch den Lauf von 13:50."
+ },
+ "2026-08-24-13-50-42--local-qwen-py-go-20260824-155040": {
+  "hidden": true,
+  "note": "Abgebrochen bei 48/73 auf Nutzerentscheid (25.08. ~01:35): pass@2 63% = 35B-Niveau bei geringerem Tempo — Kriterium \"27B-Qualität, schneller\" verfehlt, Rest ohne Erkenntniswert."
+ },
+ "oc:cc-opus48-poly-smoke": {
+  "hidden": true,
+  "note": "Harness-Validierungs-Häppchen (1 Übung), kein echter Lauf"
+ },
+ "2026-08-24-21-00-09--local-qwen-py-go-20260824-230007": {
+  "label": "codernext (abgebrochen)",
+  "hidden": true,
+  "note": "80B-Polyglot auf Tobias' Anweisung 25.08. 00:15 nach 12/73 abgebrochen (GPU fuer Retries + Kandidaten-Runde freigemacht). Kein Benchmark-Ergebnis."
  }
 }
