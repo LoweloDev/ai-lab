@@ -1,0 +1,11 @@
+{
+ "_hinweis": "Overlay für Polyglot-Läufe: hidden/label/note pro Run-Ordner. Die Rohdaten unter tmp.benchmarks werden nie verändert.",
+ "2026-08-23-18-38-50--dryrun-local": {
+  "label": "Dry-Run",
+  "hidden": true,
+  "note": "Technischer Probelauf (1 Übung) — kein Benchmark."
+ },
+ "2026-08-24-13-09-40--local-qwen-py-go-20260824-150938": {
+  "note": "Abgebrochener Muse-Start (2/73) — ersetzt durch den Lauf von 13:50."
+ }
+}

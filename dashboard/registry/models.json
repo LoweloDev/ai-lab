@@ -1,0 +1,159 @@
+{
+  "_hinweis": "Quelle der Wahrheit für Modelle. \"models\" = die kuratierten Lab-Modelle (Stand aus serve.sh, 24.08.2026), \"catalog\" = verfügbare, noch nicht installierte Kandidaten. Status (installiert/fehlt) wird zur Laufzeit aus models/ berechnet.",
+  "models": [
+    {
+      "id": "qwen38",
+      "seed": true,
+      "kind": "base",
+      "name": "Qwen3.8-27B",
+      "file": "Qwen3.8-27B-UD-IQ4_XS.gguf",
+      "hf_repo": "unsloth/Qwen3.8-27B-GGUF",
+      "hf_file": "Qwen3.8-27B-UD-IQ4_XS.gguf",
+      "args": {
+        "ctx": 32768,
+        "kv": "q8_0",
+        "ngl": 99
+      },
+      "notes": "Qualitäts-Pick fürs Agentic Coding (dichtes Modell).",
+      "vram": "komplett in VRAM (~15–16 GB inkl. KV-Cache)"
+    },
+    {
+      "id": "qwen38-vision",
+      "seed": true,
+      "kind": "vision",
+      "name": "Qwen3.8-27B · Vision",
+      "file": "Qwen3.8-27B-UD-IQ4_XS.gguf",
+      "mmproj": "mmproj-F16.gguf",
+      "hf_repo": "unsloth/Qwen3.8-27B-GGUF",
+      "hf_file": "mmproj-F16.gguf",
+      "args": {
+        "ctx": 32768,
+        "kv": "q8_0",
+        "ngl": 99
+      },
+      "notes": "GUI-/Vision-Aufgaben (Screenshots, Grounding). Teilt die Basisdatei mit qwen38.",
+      "vram": "komplett in VRAM (+0,9 GiB mmproj)"
+    },
+    {
+      "id": "qwen36moe",
+      "seed": true,
+      "kind": "base",
+      "name": "Qwen3.6-35B-A3B",
+      "file": "Qwen3.6-35B-A3B-UD-Q3_K_XL.gguf",
+      "hf_repo": "unsloth/Qwen3.6-35B-A3B-GGUF",
+      "hf_file": "Qwen3.6-35B-A3B-UD-Q3_K_XL.gguf",
+      "args": {
+        "ctx": 32768,
+        "kv": "q8_0",
+        "ngl": 99
+      },
+      "notes": "Speed-Pick: MoE, 3B aktiv, ~60–70 tok/s.",
+      "vram": "komplett in VRAM"
+    },
+    {
+      "id": "muse",
+      "seed": true,
+      "kind": "base",
+      "name": "Muse-Glimmer-30B",
+      "file": "Muse-Glimmer-30B-UD-Q4_K_XL.gguf",
+      "hf_repo": "unsloth/Muse-Glimmer-30B-GGUF",
+      "hf_file": "Muse-Glimmer-30B-UD-Q4_K_XL.gguf",
+      "args": {
+        "ctx": 32768,
+        "kv": "q8_0",
+        "ngl": 99
+      },
+      "notes": "Allrounder — 5/5 in der Repo-Suite. Achtung: HF-Repo-Angabe aus dem Namensmuster abgeleitet (Download lief außerhalb von download-models.sh) — vor erneutem Download prüfen.",
+      "vram": "komplett in VRAM (~15 GiB)"
+    },
+    {
+      "id": "muse-vision",
+      "seed": true,
+      "kind": "vision",
+      "name": "Muse-Glimmer-30B · Vision",
+      "file": "Muse-Glimmer-30B-UD-Q4_K_XL.gguf",
+      "mmproj": "mmproj-Muse-Glimmer-30B-Q8_0.gguf",
+      "hf_repo": "unsloth/Muse-Glimmer-30B-GGUF",
+      "hf_file": "mmproj-Muse-Glimmer-30B-Q8_0.gguf",
+      "args": {
+        "ctx": 16384,
+        "kv": "q8_0",
+        "ngl": 99
+      },
+      "notes": "Vision-Variante von Muse. Bei >4 Screenshots ctx auf 24576 erhöhen (siehe TODO).",
+      "vram": "komplett in VRAM (+2 GiB mmproj)"
+    },
+    {
+      "id": "codernext",
+      "seed": true,
+      "kind": "base",
+      "name": "Qwen3-Coder-Next 80B-A3B",
+      "file": "Qwen3-Coder-Next-UD-Q3_K_XL.gguf",
+      "hf_repo": "unsloth/Qwen3-Coder-Next-GGUF",
+      "hf_file": "Qwen3-Coder-Next-UD-Q3_K_XL.gguf",
+      "args": {
+        "ctx": 32768,
+        "kv": "q8_0",
+        "ngl": 99,
+        "ncmoe": 26,
+        "batch": 2048,
+        "ubatch": 2048
+      },
+      "notes": "Größtes Coding-Modell (80B-A3B MoE). Attention + shared experts auf der GPU, routed experts per mmap im RAM (--n-cpu-moe 26).",
+      "vram": "VRAM + RAM — bleibt unter ~19 GB VRAM"
+    }
+  ],
+  "catalog": [
+    {
+      "id": "qwen36moe-q4",
+      "seed": true,
+      "kind": "base",
+      "name": "Qwen3.6-35B-A3B (UD-Q4_K_XL)",
+      "file": "Qwen3.6-35B-A3B-UD-Q4_K_XL.gguf",
+      "hf_repo": "unsloth/Qwen3.6-35B-A3B-GGUF",
+      "hf_file": "Qwen3.6-35B-A3B-UD-Q4_K_XL.gguf",
+      "args": {
+        "ctx": 32768,
+        "kv": "q8_0",
+        "ngl": 99
+      },
+      "notes": "Höherwertige Quantisierung des Speed-Picks (~19–20 GiB). Knapp für 20-GB-VRAM: ggf. Kontext reduzieren.",
+      "vram": "knapp — KV q8_0 Pflicht, evtl. -c 16384"
+    },
+    {
+      "id": "qwen38-q5",
+      "seed": true,
+      "kind": "base",
+      "name": "Qwen3.8-27B (UD-Q5_K_XL)",
+      "file": "Qwen3.8-27B-UD-Q5_K_XL.gguf",
+      "hf_repo": "unsloth/Qwen3.8-27B-GGUF",
+      "hf_file": "Qwen3.8-27B-UD-Q5_K_XL.gguf",
+      "args": {
+        "ctx": 16384,
+        "kv": "q8_0",
+        "ngl": 99
+      },
+      "notes": "Höherwertige Quantisierung des Qualitäts-Picks (~18–19 GiB). Passt nur mit reduziertem Kontext ganz in den VRAM.",
+      "vram": "knapp — Kontext auf 16k begrenzen"
+    },
+    {
+      "id": "codernext-q4",
+      "seed": true,
+      "kind": "base",
+      "name": "Qwen3-Coder-Next 80B (UD-Q4_K_XL)",
+      "file": "Qwen3-Coder-Next-UD-Q4_K_XL.gguf",
+      "hf_repo": "unsloth/Qwen3-Coder-Next-GGUF",
+      "hf_file": "Qwen3-Coder-Next-UD-Q4_K_XL.gguf",
+      "args": {
+        "ctx": 32768,
+        "kv": "q8_0",
+        "ngl": 99,
+        "ncmoe": 32,
+        "batch": 2048,
+        "ubatch": 2048
+      },
+      "notes": "Größere Quantisierung von Coder-Next (~45 GiB): --n-cpu-moe erhöhen, braucht deutlich mehr RAM.",
+      "vram": "VRAM + viel RAM (mmap)"
+    }
+  ]
+}

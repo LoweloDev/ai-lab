@@ -1,0 +1,67 @@
+[
+  {
+    "section": "Konzepte",
+    "pages": [
+      {
+        "file": "was-ist-das-lab.md",
+        "title": "Was ist das Lab?",
+        "one_line": "Die fünf Schichten — Modell-Server, Harness, Sandbox, Grader, Dashboard — und warum es jede gibt."
+      },
+      {
+        "file": "sicherheitsmodell.md",
+        "title": "Sicherheitsmodell",
+        "one_line": "Warum ein Benchmark-Agent nichts kaputtmachen kann und sich nichts von selbst installiert."
+      },
+      {
+        "file": "benchmarks-verstehen.md",
+        "title": "Benchmarks verstehen",
+        "one_line": "Was Suite, Polyglot, DOM und UX-Tests messen (und nicht) — plus die Lehren aus der Forensik."
+      }
+    ]
+  },
+  {
+    "section": "Anleitungen",
+    "pages": [
+      {
+        "file": "modell-hinzufuegen.md",
+        "title": "Neues lokales Modell hinzufügen",
+        "one_line": "Vom GGUF-Download über serve.sh bis zur Hero-Karte — mit Quant-Faustregeln für 20 GB VRAM."
+      },
+      {
+        "file": "benchmark-hinzufuegen.md",
+        "title": "Neuen Benchmark-Task bauen",
+        "one_line": "Das tasks/-Plugin-Format, der grade.sh-Kontrakt mit Manipulationsschutz und die Red/Green-Verifikation."
+      },
+      {
+        "file": "api-modelle-testen.md",
+        "title": "API-Modelle testen",
+        "one_line": "Cloud-Modelle gegen dieselbe Suite fahren: Keys, echte Kosten, dsh vs. OpenCode, Privacy-Regeln."
+      },
+      {
+        "file": "server-und-flags.md",
+        "title": "Server & Flags",
+        "one_line": "serve.sh richtig benutzen: die 6 wichtigen Flags, Kontext-vs-VRAM und der Vulkan-vs-ROCm-Befund."
+      },
+      {
+        "file": "troubleshooting.md",
+        "title": "Troubleshooting",
+        "one_line": "Die real aufgetretenen Fälle: leere Antworten, Gemini-Providerproblem, VRAM, Kontext-Erschöpfung."
+      }
+    ]
+  },
+  {
+    "section": "Referenz",
+    "pages": [
+      {
+        "file": "modelle-im-lab.md",
+        "title": "Modelle im Lab",
+        "one_line": "Steckbriefe der vier lokalen Modelle und der Cloud-Vergleich — mit den echten Wochenend-Ergebnissen."
+      },
+      {
+        "file": "ergebnisse-lesen.md",
+        "title": "Ergebnisse lesen",
+        "one_line": "results.jsonl-Format, Dedupe-Regel, Run-Status-Semantik und die Landkarte aller Rohdaten."
+      }
+    ]
+  }
+]

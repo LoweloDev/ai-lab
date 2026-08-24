@@ -19,7 +19,8 @@ def run(label):
     src = ''
     for p in PAGES:
         src += f'===== {p}.html =====\n' + open(os.path.join(DIR, 'site', p + '.html')).read() + '\n'
-    body = json.dumps({'model': MODEL, 'temperature': 0, 'max_tokens': 6000,
+    body = json.dumps({'model': MODEL, 'temperature': 0,
+                       'max_tokens': int(os.environ.get('MAX_TOKENS', '6000')),
                        'messages': [{'role': 'user', 'content': PROMPT + src}]}).encode()
     req = urllib.request.Request(API, data=body, headers={'Content-Type': 'application/json', 'Authorization': f'Bearer {KEY}'})
     t0 = time.time()

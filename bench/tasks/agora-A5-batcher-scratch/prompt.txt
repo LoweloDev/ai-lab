@@ -1,0 +1,11 @@
+Hallo, ich komme aus dem Produktteam von Agora und brauche eure Hilfe: In unserem Feed-Backend fehlt die komplette Seiten-Zusammenstellung. Die Rangfolge der Beiträge haben wir schon — der Feed liefert eine fertig bewertete, sortierbare Liste. Was fehlt, ist der Schritt danach: aus dieser Liste die einzelnen Seiten zu bauen, die die App den Leuten nacheinander zeigt. Bitte entwirf und implementiere diesen Baustein im Go-Backend, im Feed-Paket unter agora-backend/internal/feed.
+
+Was uns als Produkt wichtig ist:
+
+- Eine Seite soll abwechslungsreich wirken. Wenn es Alternativen gibt, darf nicht ein und dasselbe Thema eine ganze Seite füllen.
+- Live-Räume sind toll, aber sie sollen nicht auf mehreren Seiten hintereinander den obersten Platz besetzen — außer natürlich, jemand ist gezielt im Live-Bereich unterwegs, oder es gibt gerade schlicht nichts anderes.
+- Auf dem Handy sehen die Leute immer nur einen Beitrag auf einmal; am Desktop eine kleine Handvoll pro Seite.
+- Es darf nichts verloren gehen und nichts doppelt auftauchen — jeder Beitrag aus der Rangliste erscheint genau einmal.
+- Wenn gerade nichts da ist, das man zeigen könnte, darf das Ganze nicht abstürzen.
+
+Technischer Rahmen (mehr geben wir bewusst nicht vor): der übrige Code ruft BuildBatches(items []RankedItem, options BatchOptions) []Batch auf — nutze die vorhandenen Typen im Paket. Das Paket muss kompilieren, und die übrigen Tests des Pakets müssen weiterhin durchlaufen: cd agora-backend && go test ./internal/feed/. Bestehende Testdateien bitte nicht verändern. Wie du die Seiten intern zusammenstellst, ist deine Design-Entscheidung.

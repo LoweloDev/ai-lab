@@ -21,9 +21,11 @@ case "$MODEL" in
       -m "$M/Qwen3.8-27B-UD-IQ4_XS.gguf" \
       -ngl 99 -c 32768 -ctk q8_0 -ctv q8_0 "$@" ;;
   qwen38-vision)
+    # Vision als Daily-Default tauglich: mmproj kostet nur ~0,9 GiB, Qwen3.8s
+    # Hybrid-KV ist billig genug fuer volle 32k daneben (~16,7 GiB gesamt).
     exec llama-server "${COMMON[@]}" \
       -m "$M/Qwen3.8-27B-UD-IQ4_XS.gguf" --mmproj "$M/mmproj-F16.gguf" \
-      -ngl 99 -c 16384 -ctk q8_0 -ctv q8_0 "$@" ;;
+      -ngl 99 -c 32768 -ctk q8_0 -ctv q8_0 "$@" ;;
   qwen36moe)
     exec llama-server "${COMMON[@]}" \
       -m "$M/Qwen3.6-35B-A3B-UD-Q3_K_XL.gguf" \

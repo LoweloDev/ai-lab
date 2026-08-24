@@ -1,0 +1,39 @@
+{
+ "_hinweis": "Harnesses, mit denen Benchmarks laufen. Erkennung zur Laufzeit (command -v bzw. podman images). (Neu-)Installation ist manuell — das angezeigte Kommando kopieren.",
+ "harnesses": [
+  {
+   "id": "opencode",
+   "name": "OpenCode CLI",
+   "type": "pacman",
+   "binary": "opencode",
+   "package": "opencode",
+   "install": "sudo pacman -S --needed opencode",
+   "notes": "Läuft auf dem Host und im agent-bench-Image (Suite-Tasks)."
+  },
+  {
+   "id": "agent-bench",
+   "name": "agent-bench (Basis-Image)",
+   "type": "podman-image",
+   "image": "agent-bench",
+   "install": "cd ~/ai-lab/bench && podman build -f Containerfile -t agent-bench .",
+   "notes": "Sandbox-Image für Suite-Läufe (Arch + go/node/opencode). Basis für agent-bench-dsh."
+  },
+  {
+   "id": "aider-bench",
+   "name": "aider-bench (Polyglot)",
+   "type": "podman-image",
+   "image": "aider-bench",
+   "install": "cd ~/ai-lab/bench/aider/aider && podman build -f ../Dockerfile.podman -t aider-bench .",
+   "notes": "Aider-Polyglot-Benchmark (python+go-Subset, 73 Übungen)."
+  },
+  {
+   "id": "dsh",
+   "name": "DeepSeek Harness (dsh)",
+   "type": "podman-image",
+   "image": "agent-bench-dsh",
+   "version_pinned": "0.1.1-rc.2",
+   "install": "cd ~/ai-lab/bench && podman build -f Containerfile.dsh -t agent-bench-dsh .",
+   "notes": "Developer Preview, Version im Image gepinnt (@deepseek-ai/dsh@0.1.1-rc.2). Baut auf agent-bench auf."
+  }
+ ]
+}

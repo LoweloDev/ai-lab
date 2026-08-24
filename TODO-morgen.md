@@ -1,6 +1,11 @@
 # Fahrplan (Stand 24.08. ~19:15, Deadline 25.08. ~12:00)
 
-MORGEN-NACHZÜGLER (5-10 min, nach Polyglot-Ende, GPU frei):
+MORGEN-NACHZÜGLER (nach Polyglot-Ende, GPU frei):
+- **A4+A5+A6 für die LOKALEN Modelle** (qwen38, muse, qwen36moe; codernext optional):
+  je Modell `serve.sh <m> vulkan`, dann `bench/run-task.sh <label> agora-A4-feed`,
+  `... agora-A5-batcher-scratch 1800`, `... agora-A6-scorer-scratch 1800`.
+  Cloud-Referenz: A4 3/3 PASS · A5 3/3 FAIL (einstimmig an der sortiert/sortierbar-Ambiguität,
+  je 5/6 Properties) · A6 3/3 PASS. A5-Regrade wartet auf Tobias' Mobil-Entscheidung.
 - qwen38 UX-DOM wiederholen: content war LEER (Thinking fraß die 6000 max_tokens) →
   max_tokens 12000 ODER enable_thinking:false via chat_template_kwargs in ux-dom-test.py.
 - muse UX-Vision Runde 2 wiederholen: content leer (5 Bilder sprengen 16k-ctx) →
@@ -60,6 +65,11 @@ zum Selbst-Testen künftiger Modelle, Wiki-Tab (alle Docs) + Guide für neue Ben
      (denyTools, 52/52) als Patch sichern: `git -C runs/qwen38-vulkan/aiux-U2-denytools/ws diff bench/local-agent > ~/ai-lab/denytools-qwen38.patch`.
    - `smoke-ws`, Screenshot-Dateien, `u2-grade-dev`-Scratch weg; aider-Ergebnisse behalten.
    - Podman: `agent-bench` + `aider-bench` Images behalten oder löschen → Tobias fragen (je ~1-2 GB).
+5b. OPTIONAL (nach Deadline, Tobias-Idee 24.08. abends): **Gemini-Abo vs. API vergleichen** —
+   Googles Gemini CLI als drittes Harness andocken (Muster: run-task-dsh.sh; npm @google/gemini-cli
+   in Containervariante, Abo-Auth = einmaliger OAuth auf dem Host, ~/.gemini mounten). Fragestellung
+   ist Kosten/Quotas, nicht Qualität (gleiches Modell). Suite reicht als Vergleich.
+   Generell bestätigt: OpenCode + API-Key ist der Standard-Harness-Weg.
 6. **Setup auf GitHub sichern** (Tobias' Wunsch): ~/ai-lab als Git-Repo initialisieren, .gitignore
    (models/, logs/, bench/runs/, bench/workspaces/, bench/aider/aider*, smoke-ws, Screenshots),
    privates Repo unter LoweloDev anlegen (`gh repo create ai-lab --private`), pushen. Rein: Skripte,

@@ -1,0 +1,26 @@
+{
+ "_hinweis": "GGML-Rechen-Backends für llama.cpp (Arch-Pakete). Erkennung via pacman -Q. Installation NUR manuell (sudo) — Kommando kopieren.",
+ "backends": [
+  {
+   "id": "vulkan",
+   "name": "Vulkan",
+   "package": "ggml-vulkan",
+   "ggml_backend": "ggml-vulkan",
+   "notes": "Standard-Backend des Labs (serve.sh: --device Vulkan0)."
+  },
+  {
+   "id": "rocm",
+   "name": "ROCm / HIP",
+   "package": "ggml-hip",
+   "ggml_backend": "ggml-hip",
+   "notes": "AMD-HIP-Backend (serve.sh: --device ROCm0). Bei pp meist schneller, bei tg je nach Modell."
+  },
+  {
+   "id": "cpu",
+   "name": "CPU",
+   "package": "ggml-cpu",
+   "ggml_backend": "ggml-cpu",
+   "notes": "Fallback ohne GPU; auch Grundlage des MoE-CPU-Offloads."
+  }
+ ]
+}

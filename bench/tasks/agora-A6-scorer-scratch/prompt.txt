@@ -1,0 +1,15 @@
+Hallo, ich komme aus dem Produktteam von Agora und brauche wieder eure Hilfe: In unserem Feed-Backend fehlt diesmal das Herzstück — die Bewertung und Rangfolge der Beiträge, also die Personalisierung selbst. Die Seiten-Zusammenstellung danach gibt es schon; sie erwartet eine fertig bewertete, sortierte Liste. Was fehlt, ist der Schritt davor: aus den Kandidaten (Text-Debatten, Live-Räume, KI-Vorschläge) und dem, was wir über die Person wissen, diese Liste zu machen. Bitte entwirf und implementiere diesen Baustein im Go-Backend, im Feed-Paket unter agora-backend/internal/feed.
+
+Was wir über die Person wissen, liegt fertig im Profil: ein Interessens-Vektor aus unserem Embedding-Modell, gelernte Vorlieben für Themen, Ersteller und Formate, wem und welchen Themen sie folgt, und wie sicher wir uns bei alldem sind. Die Kandidaten bringen ihrerseits einen Inhalts-Vektor mit und alles über ihre Frische, Aktivität, Qualität und ihren Live-Zustand.
+
+Was uns als Produkt wichtig ist:
+
+- Der Feed soll sich persönlich anfühlen: Was inhaltlich nah an den Interessen der Person liegt — dafür sind die Vektoren da —, gehört nach oben.
+- Menschen, denen ich folge, zählen; und Themen, mit denen ich immer wieder interagiere, wachsen mir ans Herz. Beides soll man der Rangfolge anmerken.
+- Frisch und lebendig schlägt alt und eingeschlafen.
+- Ein Live-Raum, in dem gerade wirklich etwas passiert, verdient einen Schubs gegenüber einem, der nur herumsteht.
+- KI-generierte Debatten-Vorschläge sind Würze, kein Hauptgericht: Sie dürfen eine gesunde, aktive menschliche Debatte von vergleichbarer Relevanz nie verdrängen.
+- Die Feed-Modi müssen sich vernünftig verhalten: „neu" ist schlicht chronologisch nach Erscheinen, das Neueste zuerst; „top" zeigt, was sich bewährt hat — dort schlägt Qualität die bloße Neuheit; „für dich" ist der persönliche Modus und darf sich bei jemandem mit Profil sichtbar anders sortieren als „neu".
+- Gleiche Eingaben müssen dieselbe Reihenfolge ergeben — sonst springt der Feed beim Nachladen.
+
+Technischer Rahmen (mehr geben wir bewusst nicht vor): der übrige Code ruft RankCandidates(candidates []Candidate, profile UserProfile, options RankOptions) []RankedItem auf — nutze die vorhandenen Typen im Paket. Zu den Embeddings: Im Paket gibt es eine steckbare Provider-Schnittstelle (EmbeddingProvider), aber für deine Arbeit sind Embeddings einfach Zahlen-Vektoren, die auf Kandidat und Profil schon draufliegen — in Tests kommen sie aus einem deterministischen Fake. Bau also keine Embedding-Infrastruktur und ruf nirgends ein echtes Modell auf. Das Paket muss kompilieren, und die vorhandenen Tests des Pakets müssen weiterhin durchlaufen: cd agora-backend && go test ./internal/feed/. Bestehende Testdateien bitte nicht verändern. Wie du die Signale intern gewichtest, ist deine Design-Entscheidung.
