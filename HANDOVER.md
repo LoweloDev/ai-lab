@@ -114,3 +114,18 @@ Dashboard: `http://127.0.0.1:8100` (`dashboard/start.sh`), liest alles aus Datei
   bzw. `DSH_MODEL=deepseek-v4-pro ./run-polyglot-dsh.sh dsh-pro-polyglot`.
 - Tobias' Einordnung (00:50): DeepSeek und Google nehmen sich wenig; DeepSeek für Burst-Workflow
   potenziell besser (kein Wochen-/5h-Deckel) und ähnlich günstig wie das 20-€-Abo.
+
+## ⚠ Nachtrag 01:40 — Sicherheitsvorfall Git-Push (Claude-Fehler) + Aufräumpflicht
+- 01:27 wurde Commit `e343b83` mit `bench/polyglot-oc/runs/**/cc-home/.credentials.json` (~150 Kopien des
+  Claude-OAuth-Tokens), `bench/agy-auth-home/` (Antigravity-OAuth-Token) und 3,7 GiB audit-scratch nach
+  GitHub (privates Repo LoweloDev/ai-lab) gepusht. Ursache: .gitignore-Muster mit Inline-Kommentar
+  (von Git nicht unterstuetzt) + Secret-Scan ohne Abbruch. Beides gefixt (Muster korrigiert, Scan = hartes Gate).
+- Lokal ersetzt durch sauberen Commit `746a14a` (55 Dateien, 0 Credentials). **Force-Push durch Tobias
+  noetig** (Auto-Modus verweigert Claude das): `cd ~/ai-lab && git push --force-with-lease origin main`.
+  Pruefung danach: `git ls-remote origin main` == `git rev-parse HEAD`.
+- **Morgen (nach Ende aller Ketten):** Tokens rotieren — Claude `/logout` + `/login`; Antigravity neu
+  einloggen UND `bench/agy-auth-home/` per In-Container-Login erneuern (Befehl in API-RUNBOOK/README).
+  Optional GitHub-Support bitten, verwaiste Objekte zu loeschen.
+- Download der Kandidaten ist komplett (01:36, 3/3 OK); Robustheits-Dashboard-Workflow gestoppt
+  (Quota), Spezifikation liegt im Workflow-Skript robustheit-suite-dashboard-opus-*.js — kann von einem
+  DeepSeek-/Gemini-Agenten oder nach Quota-Reset fortgesetzt werden.
