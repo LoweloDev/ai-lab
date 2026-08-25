@@ -283,6 +283,31 @@ wird ausschließlich vom Host beschrieben.
 
 ---
 
+## Stand 25.08.2026 — Kampagne 2 (Cloud, Abo, Härtung, Robustheit)
+
+Die Nacht 24./25.08. hat das Labor von „3 lokale Modelle, 5 Tasks" auf **13 Konfigurationen, 8 Tasks,
+15 Polyglot-Läufe** erweitert. Abschlussbericht: Artifact „Agenten-Labor"; Übergabe/Chronik: `HANDOVER.md`;
+alle Befunde: `bench/failure-analysis.md`; Grader-Audit: `bench/audit-report.md`, `bench/haertung-report.md`.
+
+**Neue Harnesses / Runner**
+- Claude Code (Max-Abo, OAuth): `bench/run-task-claude.sh <model-id> <label> <task>`, `bench/webapp/ux-dom-claude.sh`,
+  `bench/polyglot-oc/run-polyglot-claude.sh` — Helfer `bench/cc-lib.sh` (Token-Vorabcheck, Sync-back, Vergiftungs-Wächter).
+- Antigravity CLI (Google-Abo, `agy`): `bench/run-task-agy.sh`, `ux-dom-agy.sh`, `run-polyglot-agy.sh`; Login-Template
+  `bench/agy-auth-home/` (gitignored, In-Container-Login, siehe API-RUNBOOK). `AGY_EFFORT=low|high`.
+- DeepSeek dsh: `bench/polyglot-oc/run-polyglot-dsh.sh`. OpenCode-Polyglot auch lokal: `OC_CONFIG=opencode-config
+  run-polyglot-oc.sh llamacpp/local <label>` (Kette: `polyglot-oc/oc-lokal-kette.sh`, mit Zeitbremse).
+- Suite-Tasks A4 (gepflanzter Feed-Bug), A5/A6 (From-Scratch nach Produkt-Brief, versteckte Property-Tests).
+
+**Grader sind gehärtet** (Audit: 27 Löcher, 36 Exploit-Klassen geschlossen, 98 Regrades = 0 Flips): `tasks/*/grade.sh`
+= v2 (Wegwerf-Kopie, Pass-Ereignis je Test, Pristine-Vergleich), Backups `grade.v1.sh`; Apply/Rollback:
+`bench/apply-haertung.sh` (Kopfkommentar). A5-Lesart umschaltbar (`bench/.a5-lesart`, Audit 4.3).
+
+**Robustheit** (Zusatz-Metrik über alle 8 Tasks): `bench/robustness-battery/` — je Task `battery.json` + Tests,
+Go-Runner `run-all.sh` (idempotent, `results.json`), im Dashboard als Spalte/Graph/Job, Wiki „Robustheit".
+
+**Ergebnis in einem Satz:** Bei testbarer Arbeit sind Flash (Abo, low), DeepSeek (API) und Opus gleich gut — Opus
+setzt sich nur im UX-Review (ohne Test-Rückkanal) ab; lokal ist Qwen3.6-35B-A3B mit 64k Kontext + OpenCode der Go-to.
+
 ## Dateikarte
 
 | Pfad | Inhalt |

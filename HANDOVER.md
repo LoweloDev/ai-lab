@@ -178,3 +178,6 @@ Dashboard: `http://127.0.0.1:8100` (`dashboard/start.sh`), liest alles aus Datei
   From-Scratch-Sonderwerkzeug. In den Morgenbericht als Fazit "lokal" übernehmen.
 - 09:50 Abschlussbericht als Artifact "Agenten-Labor" aktualisiert (UX-Tabelle folgt nach Auszählung). OC-Polyglot
   lokal fertig: 35B 40/53, 80B 27/47, 27B abgebrochen 11/15 von 18 (Tobias). Kandidaten-Runde läuft seit ~09:45.
+- 09:50 Kandidaten-Runde: Mistral Small 4 119B IQ3_XXS läuft — llama-bench Vulkan tg 6,3 t/s, pp 109 t/s (Streaming-
+  Kante; halb so schnell wie geschätzt, 1/4 des 80B). Suite wird Stunden dauern; Abbruch jederzeit: `pkill -f kandidaten-kette`
+  + `pkill -x llama-server` (laufender Task wird als Timeout/Abbruch gewertet, Rest entfällt). ROCm-bench läuft/lief nach.
