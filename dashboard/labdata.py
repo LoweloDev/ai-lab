@@ -377,6 +377,10 @@ def read_polyglot(show_hidden=False):
             fresh = newest and (now - newest) < 1800
             if expected and n >= expected and has_summary:
                 status = 'fertig'
+            elif has_summary and expected and n < expected:
+                # summary.json schreibt der Runner nur am Ende: unvollstaendig + Summary = abgebrochen
+                # (Zeitlimit oder Tobias), nicht "laeuft" — egal wie frisch die Dateien sind.
+                status = 'abgebrochen'
             elif fresh:
                 status = 'läuft'
             elif is_val:

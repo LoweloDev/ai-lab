@@ -450,6 +450,7 @@ function renderPolyglot(d) {
   const stChip = r => r.status === 'läuft' ? chip('run', 'läuft')
     : r.status === 'fertig' ? chip('ok', 'fertig')
     : r.status === 'fehler' ? chip('bad', 'Fehler')
+    : r.status === 'abgebrochen' ? chip('warn', 'abgebrochen')
     : chip('off', 'verworfen');
   const picker = d.runs.map(r => `
     <button class="runbtn ${r.dir === S.sel.poly ? 'sel' : ''}" data-act="poly" data-id="${esc(r.dir)}">
