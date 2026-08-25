@@ -1,0 +1,36 @@
+06 — Batterie fuer agora-A2-jsonld fertig
+Gebaut: robustness-battery/agora-A2-jsonld/{battery.json,battery_test.mjs} (node, cwd agora-web,
+install tests/zz_battery.test.mjs, cmd "node --test --test-reporter=tap tests/zz_battery.test.mjs",
+real ZZBatReal, path ZZBatPath, timeout 150). Real 10, Path 5, je Test WHY, deterministisch
+(kein Zufall/Zeit/Netz, keine Dateisystem-Nebenwirkung), je Test node:test-Timeout 5 s.
+Nur Brief-Schnittstelle jsonLdScriptBody (src/lib/jsonLdScript.ts) verwendet — nie die Form
+einer Implementierung; kein Dateisystem-Lesen; die page.tsx-Verdrahtung prueft der Grader
+(grade.sh/grade.v2.sh) selbst, die Batterie dupliziert sie nicht.
+Real (Brief-Vertrag: kein </script>-Ausbruch, kein unescaptes < >, & als \u0026, gueltiges
+JSON, JSON.parse deep-equal zur Eingabe, Idempotenz): ClosingScriptBreakoutVectors (alle
+Gross-/Klein- und Attribut-Varianten), HtmlCommentVectors (<!--/-->, Script-data-escaped
+State), AmpAndGtEscapedAsUnicode, LineSeparatorsSurviveRoundTrip (U+2028/U+2029 nur
+Roundtrip, NICHT als Escaping-Zwang — 2 PASS-Abgaben escapen sie nicht), UnicodeEscapeText-
+RoundTrips (woertliche \u003c im Text + echte Unicode-Zeichen), QuotesAndBackslashesRoundTrip,
+NestedStructuresRoundTrip (inkl. Sonderzeichen in Objekt-Keys), IdempotentApplyTwice
+(jsonLdScriptBody(JSON.parse(body)) === body), ValidJsonSemanticEquality (breiter Mixed-
+Payload), RealisticDebatePayload (DiscussionForumPosting mit Breakout). Path (nur kein
+Crash/Hang, Terminierung; kein Datenverlust, wo Rundreise sinnvoll): CyclicReferences,
+BigIntAndSymbol, DateAndFunction, UndefinedNaNInfinity, HugePayloads (200k-Array, ~1.4 MB-
+String, 1000 Ebenen tief). Helper wird bewacht dynamisch importiert: Fehlt die Datei (=
+Baseline-Problem), reissen die 10 Real-Tests einzeln mit klarer Meldung, die Path-Tests
+laufen als unerheblich (skip); kein buildable:false-Kippen des Laufs.
+Selbsttest audit-scratch/robust/agora-A2-jsonld(-selftest)/: Baseline real 0/10, path 5/5 —
+reisst genau den Kern (kein Helper da). Mutationskontrollen: nacktes JSON.stringify real
+6/10 (alle Escape-Invarianten), HTML-Entity-Escaping (&lt;...) real 6/10 — beide korrekt
+verworfen. PASS-Abgaben alle 12 Labels (agy-37flash, cc-opus48, cc-opus5, codernext-vulkan,
+dsh-v4-flash, dsh-v4-pro, muse-vulkan, oc-gemini37f, oc-v4-flash, oc-v4-pro, qwen36moe-vulkan,
+qwen38-vulkan) je real 10/10, path 5/5; zweimal laufen = identisch (sha256 ueber TAP-Zeilen),
+~0.3-0.8 s je Lauf (Gesamtlauf < 1 s < 60 s). Runner ueber alle 12 Labels: 12/12 buildable,
+real 10/10, path 5/5, results.json (Schema 2) aktualisiert (generated 2026-08-25T00:45:26Z),
+runs/ unberuehrt (keine zz_battery-Datei dort); erneuter Lauf ohne --force = 0 neu berechnet.
+Offen: (1) keine FAIL-Abgabe vorhanden (alle 12 Labels enden PASS) — die FAIL-Validierung
+traegt die Baseline (real 0/10, unter dem Grader durchfallend) + die beiden Mutanten;
+(2) ein echter synchroner Haenger in jsonLdScriptBody ist in node nicht preemptbar — async-
+Haenger faengt das Test-Timeout, ein sync-Hang wird vom Runner-Timeout (150 s) buildable:false
+(gleiche Charakteristik wie done-05).

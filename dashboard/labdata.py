@@ -4,6 +4,7 @@ verändert — Statuskorrekturen laufen über das Overlay registry/run-annotatio
 """
 import calendar
 import glob
+import hashlib
 import json
 import os
 import re
@@ -11,8 +12,12 @@ import time
 
 from labcore import (BENCH, RESULTS, TASKS_DIR, TMPB, AIDER_ROOT, LOGS, WEBAPP,
                      RUNS_DOM, RUNS_UX, POLY_LABELS, ANNOT, DASH, LAB, WIKID,
-                     RUNSD, load_json, tail_lines, bench_containers)
+                     RUNSD, CACHE, load_json, tail_lines, bench_containers)
 import labregistry
+
+ROBUST_DIR = os.path.join(BENCH, 'robustness-battery')
+ROBUST_RESULTS = os.path.join(ROBUST_DIR, 'results.json')
+RUNS_DIR = os.path.join(BENCH, 'runs')
 
 
 def base_model_ids():
@@ -75,8 +80,155 @@ def read_suite():
         return (1, 0, lbl)
 
     labels.sort(key=label_key)
+    rob = robustness_map()
+    for e in entries:
+        e['robust'] = rob.get((e.get('model'), e.get('task')))
     return {'tasks': tasks, 'labels': labels, 'entries': entries,
             'superseded_count': n_sup}
+
+
+# ------------------------------------------------------------ Robustheit
+
+def _battery_configs():
+    """robustness-battery/<task>/battery.json -> {task: {'lang':…, 'cwd':…}}."""
+    out = {}
+    try:
+        names = sorted(os.listdir(ROBUST_DIR))
+    except OSError:
+        return out
+    for name in names:
+        p = os.path.join(ROBUST_DIR, name)
+        if not os.path.isdir(p):
+            continue
+        cfg = load_json(os.path.join(p, 'battery.json'), None)
+        if isinstance(cfg, dict) and cfg.get('task') == name and cfg.get('cwd'):
+            out[name] = {'lang': cfg.get('lang') or 'go', 'cwd': cfg['cwd']}
+    return out
+
+
+def _ws_fingerprint(ws, cwd, lang):
+    """sha256 wie der Runner (cmd/battery/main.go): sortierte relative Pfade +
+    Inhalte der Nicht-Test-Quelldateien unter ws/<cwd>. None, wenn nicht lesbar."""
+    root = os.path.join(ws, cwd)
+    if not os.path.isdir(root):
+        return None
+    skip = {'.git'}
+    if lang == 'node':
+        skip |= {'node_modules', 'test', 'tests'}
+    rels = []
+    for dirpath, dirnames, filenames in os.walk(root):
+        dirnames[:] = [d for d in dirnames if d not in skip]
+        for fn in filenames:
+            full = os.path.join(dirpath, fn)
+            if lang == 'go':
+                if fn.endswith('.go') and not fn.endswith('_test.go'):
+                    rels.append(os.path.relpath(full, root))
+            elif fn.endswith(('.js', '.mjs', '.ts')):
+                rels.append(os.path.relpath(full, root))
+    rels.sort()
+    h = hashlib.sha256()
+    for rel in rels:
+        try:
+            with open(os.path.join(root, rel), 'rb') as f:
+                b = f.read()
+        except OSError:
+            return None
+        h.update(rel.encode('utf-8'))
+        h.update(b'\x00')
+        h.update(b)
+        h.update(b'\x00')
+    return h.hexdigest()
+
+
+def _compute_stale():
+    """Stale (task,label)-Paare: aktueller ws-Fingerprint != gespeicherter."""
+    stale = []
+    res = load_json(ROBUST_RESULTS, None)
+    if not isinstance(res, dict):
+        return stale
+    cfgs = _battery_configs()
+    for task, bylabel in (res.get('results') or {}).items():
+        cfg = cfgs.get(task)
+        if not cfg:
+            continue
+        for label, r in bylabel.items():
+            fp = r.get('ws_fingerprint')
+            if not fp:
+                continue
+            cur = _ws_fingerprint(os.path.join(RUNS_DIR, label, task, 'ws'),
+                                  cfg['cwd'], cfg['lang'])
+            if cur and cur != fp:
+                stale.append([task, label])
+    stale.sort()
+    return stale
+
+
+def staleness():
+    """Staleness je (task,label) — Fingerprint-Vergleich, 30-s-Cache."""
+    return CACHE.get('robust_stale', 30, _compute_stale)
+
+
+def _compute_robustness_map():
+    out = {}
+    res = load_json(ROBUST_RESULTS, None)
+    if not isinstance(res, dict):
+        return out
+    stale = frozenset(map(tuple, staleness()))
+    for task, bylabel in (res.get('results') or {}).items():
+        for label, r in bylabel.items():
+            out[(label, task)] = {
+                'real_pass': r.get('real_pass'),
+                'real_total': r.get('real_total'),
+                'path_pass': r.get('path_pass'),
+                'path_total': r.get('path_total'),
+                'buildable': bool(r.get('buildable')),
+                'failed': r.get('failed') or [],
+                'stale': (task, label) in stale,
+                'error': r.get('error') or '',
+            }
+    return out
+
+
+def robustness_map():
+    """{(label, task): robust-Dict} aus results.json (Schema 2), 30-s-Cache."""
+    return CACHE.get('robust_entry', 30, _compute_robustness_map)
+
+
+def read_robustness():
+    """/api/robustness: Batterien, Ergebnisse, Scores je Label, Staleness."""
+    res = load_json(ROBUST_RESULTS, None)
+    if not isinstance(res, dict):
+        res = {}
+    batteries = res.get('batteries') or {}
+    cfgs = _battery_configs()
+    total_tasks = sorted(cfgs) or sorted(batteries)
+    by_entry = robustness_map()
+    labels = sorted({k[0] for k in by_entry})
+    scores = {}
+    for label in labels:
+        per_task = {}
+        rp = rt = pp = pt = 0
+        n_tasks = 0
+        for task in total_tasks:
+            r = by_entry.get((label, task))
+            per_task[task] = r
+            if r and r['buildable']:
+                rp += r['real_pass'] or 0
+                rt += r['real_total'] or 0
+                pp += r['path_pass'] or 0
+                pt += r['path_total'] or 0
+                n_tasks += 1
+        scores[label] = {
+            'real_score': (float(rp) / rt) if rt else None,
+            'real_pass': rp, 'real_total': rt,
+            'path_pass': pp, 'path_total': pt,
+            'n_tasks': n_tasks, 'n_missing': len(total_tasks) - n_tasks,
+            'per_task': per_task,
+        }
+    return {'batteries': batteries,
+            'results': res.get('results') or {},
+            'scores': scores,
+            'stale': staleness()}
 
 
 # --------------------------------------------------------------- Polyglot

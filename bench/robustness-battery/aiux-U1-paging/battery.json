@@ -1,0 +1,12 @@
+{
+  "task": "aiux-U1-paging",
+  "lang": "node",
+  "cwd": "runtime/web",
+  "install": [
+    { "src": "battery_test.js", "dst": "test/zz_battery.test.js" }
+  ],
+  "cmd": "node --test --test-reporter=tap test/zz_battery.test.js",
+  "real_prefix": "ZZBatReal",
+  "path_prefix": "ZZBatPath",
+  "timeout": 150
+}

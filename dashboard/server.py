@@ -71,6 +71,10 @@ def read_meta():
         benches.append({'id': 'polyglot', 'name': 'Polyglot (py+go, 73 Übungen)',
                         'cls': 'gpu', 'available': True,
                         'desc': 'Aider-Benchmark gegen :8080 — dauert Stunden.'})
+    benches.append({'id': 'robustheit', 'name': 'Robustheit neu berechnen',
+                    'cls': 'cpu', 'available': True,
+                    'desc': 'Robustheits-Batterie (Zusatz-Metrik) über alle '
+                            'Abgaben — CPU, kein GPU-Lock.'})
     return {'benchmarks': benches, 'tasks': tasks,
             'dom_tasks': ['info', 'form'],
             'backends': ['vulkan', 'rocm'],
@@ -134,6 +138,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(labdata.read_overview())
             if p == '/api/suite':
                 return self._json(labdata.read_suite())
+            if p == '/api/robustness':
+                return self._json(labdata.read_robustness())
             if p == '/api/polyglot':
                 return self._json(labdata.read_polyglot(
                     show_hidden=q.get('hidden') == '1'))

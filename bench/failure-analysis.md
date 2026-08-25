@@ -174,3 +174,40 @@ die contract/*.md-Dokumente durchsucht ("consecutive", "top slot", "live room" �
 immer weiter ergaenzt statt zu bauen. Kein Infra-Einfluss mehr -> Urteil FAIL (keine Abgabe) bleibt.
 Befund fuer den Bericht: Bei From-Scratch-Aufgaben mit vagem Brief kippt die 27B-Klasse in reine
 Recherche-Schleifen; die Cloud-Modelle bauen nach 5-10 Lesezugriffen und iterieren mit Tests.
+Update 02:25: qwen38 A6-Retry (64k, 60 min) ebenfalls ohne Abgabe (leerer Diff, Timeout) — gleiches
+Recherche-Schleifen-Muster wie A5. Beide Urteile FAIL (keine Abgabe) sind damit final und infra-frei.
+
+## 25.08. 02:29 — Grader-Haertung angewendet: 98 Regrades, 0 Flips
+apply-haertung.sh (Audit-Pakete P1, P2, P4, P6, P8) hat alle 8 Grader auf die gehaertete Fassung
+umgestellt (Backups grade.v1.sh / grade_test.v1.go, results.jsonl.bak-audit-20260825-022854) und alle
+98 letzten Eintraege neu bewertet: same=98, flip=0, A5-Lesart streng. Alle Urteile der Kampagne halten
+unter Gradern, die die 36 Audit-Exploits abweisen. Nebeneffekt: U2 zaehlt jetzt 58 statt 52 Tests
+(grade.v2.test.js ergaenzt 6 Tool-/Alias-Faelle) — Urteilsklasse unveraendert.
+
+## 25.08. 02:45 — dsh-flash Polyglot komplett: 68/73 pass@1, 73/73 pass@2 (0,32 $, 112 min)
+Gegen OpenCode+flash (63/73, 70/73, 0,24 $, 82 min): dsh ist im Polyglot GENAUER (pass@2 lueckenlos,
++5 pass@1), OpenCode ist SCHNELLER und GUENSTIGER (auch in der Suite: 889 s vs 1331 s bei gleicher
+Qualitaet 7/8). Harness-Urteil fuer DeepSeek daher zweigeteilt: Genauigkeit -> dsh (Reasoning "high",
+kein Session-Resume, Developer-Preview); Tempo/Preis/Reife -> OpenCode. Tobias' Beobachtung ("dsh
+akkurater, aber langsamer") bestaetigt sich auf der vollen Strecke.
+Harness-Matrix DeepSeek-flash Polyglot: Aider 33/61 (edit-only) · OpenCode 63/70 · dsh 68/73.
+Update 02:42: qwen36moe A5-Retry (64k, kein Overflow) liefert erstmals eine Abgabe (batches.go, 9,3 min):
+FAIL an zwei Properties (Mobile-Best-First = Ambiguitaets-Kante wie alle + Topic-Mix). Einordnung: ueber
+qwen38 (keine Abgabe), unter Cloud (nur die eine Property) und unter dem 80B (drei Properties, aber
+Abgabe). Der gehaertete Grader nennt die gerissenen Tests jetzt direkt in der Urteilszeile.
+
+## 25.08. 02:58 — Flash-low komplett: Effort-A/B abgeschlossen (Tobias: Thema Flash/Abo damit zu)
+agy-37flash-low 7/8 (nur A5, gleiche Property wie alle) = identisch zu high. Summe 481 s vs 907 s,
+Output 53k vs 170k Tokens, Thinking 6,6k vs 109k (low denkt minimal, nicht null), Input ~gleich.
+Details bench/agy-low-tokens.md. Schluss: Fuer Repo-Arbeit ist low der Sweet-Spot; high kauft hier nur Zeit.
+Forensik qwen38 A6-Retry (03:10): 39 Schritte, 47x read, 7x grep, 3x glob, 2x bash, 0x write/edit — aber
+KEINE Spec-Recherche wie bei A5, sondern eine Leseschleife: die letzten 8 Aufrufe sind 4x feed.go und
+2x feed_suggestions_feed.go (dieselben Handler-Dateien). ~90 s je Schritt (27B dense, 64k Kontext) ->
+39 Runden = exakt das 3600-s-Limit. Zwei verschiedene Agenten-Pathologien der 27B-Klasse bei From-Scratch:
+A5 "immer mehr Spec lesen", A6 "dieselbe Datei nochmal lesen". Folgetest-Idee (HANDOVER): Harness-Guard
+"N Lesezugriffe ohne Write -> Abbruch + Schreibaufforderung" und pruefen, ob qwen38 dann abliefert.
+
+## 25.08. 03:25 — Flash-low Polyglot: 73/73 pass@1 in 33 min (high: 73/73 in 74 min)
+Median 24 s vs 53 s je Uebung; Envelope-Summen low: Input 8,46 M, Output 209 k, Thinking 68 k, Cache 9,55 M
+(high: 11,34 M / 888 k / 684 k / 23,2 M). Testdateien byteidentisch, 0 Fehler. Effort-A/B damit auf Suite UND
+Polyglot eindeutig: gleiche Qualitaet, halbe Zeit, ein Viertel Output, ein Zehntel Thinking.

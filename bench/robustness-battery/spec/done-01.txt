@@ -1,0 +1,23 @@
+01 — Generischer Batterie-Runner fertig
+Gebaut: cmd/battery/ (eigenes go.mod, Modul battery, nur Standardbibliothek),
+run-all.sh (chmod +x, GOCACHE=/tmp/gocache-battery, GOFLAGS=-mod=mod, GOPROXY=off),
+battery.json fuer agora-A5-batcher-scratch und agora-A6-scorer-scratch (battery_test.go
+1:1 aus a5/ bzw. a6/ kopiert; cmd/install wie deren run-battery.sh).
+Runner: ws -> os.MkdirTemp (node_modules als Symlink), Batterie einkopieren, cmd mit
+Prozessgruppen-Timeout (battery.json.timeout) ausfuehren, go test -json parsen
+(Action pass/fail/skip; build-fail/rc!=0 ohne Tests => buildable:false, erste
+Fehlerzeile), nach real_prefix/path_prefix zaehlen, results.json atomar (tmp+rename,
+Schema 2). Fingerprint = sha256 ueber sortierte Pfade+Inhalte der Nicht-Test-Quellen
+unter cwd; nur Paare mit abweichendem Fingerprint neu, --force alles. Log: run-all.log.
+Selbsttest: ./run-all.sh --force --jobs 2 -> 24 Paare in 10.3 s.
+A5 (12 Labels): 9 baubar je 6/7+5/5 (einzig TiesMobile gerissen); codernext 5/7+5/5
+  (zusatzlich AllLivePool — Label fehlt in a5-results.md, Abgabe kam nach dessen
+  Snapshot); qwen36moe/qwen38 nicht baubar (undefined BuildBatches). Alle in
+  a5-results.md gelisteten Zahlen stimmen 1:1.
+A6 (12 Labels): alle 12 Zahlen identisch mit a6-results.md: agy/cc-opus5/cc-opus48/
+  dsh*/oc* 12/12+9/9; codernext 11/12+9/9; muse 9/12+9/9; qwen36moe 8/12+9/9;
+  qwen38 nicht baubar (undefined RankCandidates).
+Determinismus: codernext A5 zweimal identisch 5/7+5/5. Zweiter Aufruf ohne --force:
+0.07 s, results.json byte-identisch (sha256 unveraendert). Kein zz_battery_test.go
+oder tmp unter runs/ zurueckgeblieben; git status der ro-Workspaces unveraendert.
+Offen: node-TAP-Pfad implementiert, mangels Node-Task noch ungetestet.

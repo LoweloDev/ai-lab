@@ -16,6 +16,11 @@
         "file": "benchmarks-verstehen.md",
         "title": "Benchmarks verstehen",
         "one_line": "Was Suite, Polyglot, DOM und UX-Tests messen (und nicht) — plus die Lehren aus der Forensik."
+      },
+      {
+        "file": "robustheit.md",
+        "title": "Robustheit der Abgaben",
+        "one_line": "Die Batterie als Zusatz-Metrik: Real- vs. Path-Kanten, real_score, Staleness per Fingerprint — und warum sie keine Urteile ändert."
       }
     ]
   },

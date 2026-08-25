@@ -486,3 +486,29 @@ details.adv .form-grid { margin: 4px 0 14px; }
 .bar-fill.part { background: var(--warn); }
 .bar-val { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: var(--fs-0); font-variant-numeric: tabular-nums; color: var(--ink); white-space: nowrap; }
 @media (max-width: 700px) { .bar-row { grid-template-columns: 130px 1fr; } }
+/* Gesamtzeit-Graph: Timeout-Segment schraffiert, direkt hinter dem Arbeitsbalken */
+.bar-track { display: flex; align-items: stretch; }
+.bar-fill { flex: none; }
+.bar-fill.hatch { background: repeating-linear-gradient(135deg, var(--baseline) 0 4px, transparent 4px 8px); opacity: .7; border-radius: 0 5px 5px 0; }
+.sw-hatch { display: inline-block; width: 14px; height: 10px; vertical-align: -1px; border: 1px solid var(--border); border-radius: 2px; background: repeating-linear-gradient(135deg, var(--baseline) 0 3px, transparent 3px 6px); }
+
+/* ================================================================ Robustheit */
+.mini-rob { display: block; font-size: 10.5px; color: var(--muted); line-height: 1.35; margin-top: 2px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+td.cell.robcol { min-width: 96px; cursor: default; text-align: center; padding: 8px 6px; }
+td.cell.robcol .rob-pct { font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; }
+td.cell.robcol .rob-pct .dim { font-size: 12px; color: var(--muted); font-weight: 500; }
+.rob-bar { display: block; max-width: 76px; margin: 4px auto 2px; }
+.rob-sub { font-size: 10.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+table.matrix th.robth { text-align: center; }
+.mono { font-family: var(--mono, ui-monospace, monospace); font-variant-numeric: tabular-nums; }
+.rob-row { cursor: pointer; border-radius: 8px; padding: 2px 4px; }
+.rob-row:hover { background: var(--inset); }
+.rob-row.sel { outline: 1px solid var(--accent); background: var(--accent-bg); }
+.bar-fill.rob { background: var(--accent); opacity: .85; }
+.rob-pill { cursor: default; font-variant-numeric: tabular-nums; }
+.rob-per { grid-column: 1 / -1; padding: 8px 4px 2px 8px; border-top: 1px dashed var(--grid); }
+.rob-per .crow { grid-template-columns: 200px 1fr 240px; gap: 10px; }
+/* Teil-Score: nicht baubare Tasks sind aus dem Nenner herausgerechnet, der Wert ist
+   also NICHT mit vollstaendigen Labels vergleichbar. Muss die .rob-Regel oben schlagen. */
+.bar-fill.rob.part { background: var(--warn); }
+td.cell.robcol.rob-part .rob-sub { color: var(--warn); }

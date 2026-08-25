@@ -1,0 +1,28 @@
+25.08 01:49:46 == Auftrag 01 (01-runner.md) via oc
+25.08 01:55:04    rc=0 done-Datei: NEIN
+25.08 01:55:04    Wiederholung 01
+25.08 01:55:04 == Auftrag 01 (01-runner.md) via oc
+25.08 01:59:58    rc=0 done-Datei: ja
+25.08 01:59:58 == Auftrag 02 (02-batterie-agora-A4-feed.md) via oc
+25.08 02:07:56    rc=0 done-Datei: ja
+25.08 02:07:56 == Auftrag 03 (03-batterie-agora-A1-gate.md) via oc
+25.08 02:18:24    rc=0 done-Datei: NEIN
+25.08 02:18:24    Wiederholung 03
+25.08 02:18:24 == Auftrag 03 (03-batterie-agora-A1-gate.md) via oc
+25.08 02:23:34    rc=0 done-Datei: ja
+25.08 02:23:34 == Auftrag 04 (04-batterie-agora-A3-hls.md) via oc
+25.08 02:30:31    rc=0 done-Datei: ja
+25.08 02:30:31 == Auftrag 05 (05-batterie-aiux-U1-paging.md) via oc
+25.08 02:36:27    rc=0 done-Datei: ja
+25.08 02:36:27 == Auftrag 06 (06-batterie-agora-A2-jsonld.md) via oc
+25.08 02:39:02    rc=0 done-Datei: NEIN
+25.08 02:39:02    Wiederholung 06
+25.08 02:39:02 == Auftrag 06 (06-batterie-agora-A2-jsonld.md) via oc
+25.08 02:46:38    rc=0 done-Datei: ja
+25.08 02:46:38 == Auftrag 07 (07-batterie-aiux-U2-denytools.md) via oc
+25.08 02:58:14    rc=0 done-Datei: ja
+25.08 02:58:14 == Auftrag 08 (08-dashboard.md) via oc
+25.08 03:07:59    rc=0 done-Datei: ja
+25.08 03:07:59 == Host-Nachlauf: run-all.sh ueber alle Batterien
+battery: 104 Paare geprueft, 104 neu berechnet
+run-all rc=0

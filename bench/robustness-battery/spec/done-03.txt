@@ -1,0 +1,15 @@
+03 — Batterie fuer agora-A1-gate fertig
+Gebaut: robustness-battery/agora-A1-gate/{battery.json,battery_test.go} (go,
+cwd agora-backend, install internal/aiwork/zz_battery_test.go, cmd "go test
+./internal/aiwork/ -run ZZBat -count=1 -json -timeout 110s", real ZZBatReal,
+path ZZBatPath, timeout 150). Real 10, Path 6, je Test mit WHY, deterministisch
+(Kanaele/WaitGroups/Ereignis-Poll statt Timing), Timeout+Panic-Fang je Messung.
+Real: FIFO gleiche Prio (4, gestaffelt), FIFO ueber Prioritaeten, Freigabe nach
+Abschluss, Fehlerdurchreichung, Abbruch wartend/aktiv, Wait:0, QueueDepth:0,
+Ceiling unter Saturation, 50 Zyklen ohne Leak. Path: negative Limits, Cancel vor
+Start, Doppelfreigabe, Cancel-Welle, nil-Kontext, Priority out-of-range.
+Selbsttest audit-scratch/robust/agora-A1-gate/: Baseline real 8/10, path 5/6 —
+reisst genau die 2 FIFO-Tests am Bug (>= statt > in nextAdmissible) + nil-ctx.
+PASS-Abgaben agy-37flash, dsh-v4-pro, oc-v4-flash je real 10/10, path 5/6;
+zweimal laufen = identisch, ~2 s kalt / ~0.1 s warm (< 60 s), runs/ unberuehrt.
+Offen: keine erhaltene FAIL-Abgabe (oc-gemini37f endet PASS), Baseline als FAIL-Repraesentant; nil-Kontext reisst bei allen Abgaben (dokumentierter Befund).

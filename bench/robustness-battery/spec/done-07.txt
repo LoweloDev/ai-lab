@@ -1,0 +1,32 @@
+07 — Batterie fuer aiux-U2-denytools fertig
+Gebaut: robustness-battery/aiux-U2-denytools/{battery.json,battery_test.js} (node, cwd runtime/web,
+install test/zz_battery.test.js, cmd "node --test --test-reporter=tap test/zz_battery.test.js",
+real ZZBatReal, path ZZBatPath, timeout 150). Real 10, Path 4, je Test WHY, deterministisch
+(kein Zufall/Zeit/Netz, keine Dateisystem-Nebenwirkung), je Test node:test-Timeout 5 s. Benutzt
+nur Baseline-Schnittstellen (createRuntime/createHost, Dispatch-Envelope) plus den vom Brief
+geforderten Config-Schluessel denyTools — nie die Form einer Implementierung.
+Keine Grader-Duplikate (grade.test.js/grade.v2.test.js bleiben in Kraft): payload.list,
+search_types/search_classes, Familien-Sweep ueber ALLE beworbenen Tools, Alias-Paare beider
+Richtungen und Layer-1-per-Identitaet (write_field auf Handle) prueft der Grader; die Batterie
+ergaenzt die Spec-07-Kanten: Denial VOR Argument-Validierung (payload.reapply/release_handle
+ohne Args), capabilities-Hide + Geschwister bleiben (payload.disable/reapply), Reihenfolge-
+Unabhaengigkeit, Gross-/Kleinschreibung ('PAYLOAD.LIST' nie Security-Denial, 'Payload.List'
+sperrt nichts), denyTools gewinnt gegen allowCode*-Flags, denyTools+denyTypePrefix kombiniert,
+Layer-1-Sperre per TYPNAME ('AiUxDispatch', replace_method/write_static) trotz Layer-2-Config,
+zur Laufzeit gewaehltes Tool (erste/mittlere/letzte der beworbenen, jenseits Grader-Tools),
+beide Spellings von ui.inspect/android.inspect_views in einer Liste (describe-kanonisierungs-
+tolerant), ui.snapshot (an sich nur Argument-Fehler) als Denial sperrbar ohne Leakage.
+Path (nur Terminierung + strukturierte Envelope, keine Fachdeutung): undefined/[]/null,
+Duplikate, Nicht-Strings/Blank-Eintraege, 1000-Eintraege-Liste.
+Selbsttest audit-scratch/robust/aiux-U2-denytools/ (Wegwerf-Kopien, cp ohne .git/node_modules):
+Baseline workspaces/aiux-U2-denytools real 1/10, path 4/4 — nur der Anker Layer1Survives-
+Layer2Config ist gruen; alle 9 anderen Real-Tests reissen einzeln mit klarer Meldung, weil
+denyTools in der Baseline nicht existiert (Kern des Task-Problems). PASS-Abgaben (letzter
+results.jsonl-Eintrag je Label): cc-opus5 10/10+4/4, oc-gemini37f 10/10+4/4, muse-vulkan
+10/10+4/4 (Kanonisierung-tolerant: describe darf ui.inspect+alias ODER nur canonical melden).
+FAIL-Abgabe codernext-vulkan (offiziell fail=3): real 2/10, path 4/4 — caps-Hide funktioniert,
+der Dispatch-Denial-Pfad bricht aber mit "ReferenceError: RuntimeSecurityError is not defined",
+deckt sich mit dem Grader-Befund. Zweimal laufen = identisch (Verdikt-Zeilen bytegleich),
+je Workspace ~0,1 s (Gesamtlauf < 1 s < 60 s). real_total=10, path_total=4.
+Offen: keine. Beim naechsten Runner-Lauf werden alle (task,label)-Paare per Fingerprint neu
+berechnet (results.json Schema 2); runs/ bleibt unberuehrt.

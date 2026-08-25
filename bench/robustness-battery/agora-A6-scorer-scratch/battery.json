@@ -1,0 +1,12 @@
+{
+  "task": "agora-A6-scorer-scratch",
+  "lang": "go",
+  "cwd": "agora-backend",
+  "install": [
+    { "src": "battery_test.go", "dst": "internal/feed/zz_battery_test.go" }
+  ],
+  "cmd": "go test ./internal/feed/ -run ZZBat -count=1 -json -timeout 110s",
+  "real_prefix": "ZZBatReal",
+  "path_prefix": "ZZBatPath",
+  "timeout": 150
+}

@@ -44,3 +44,8 @@ bench/.haertung-freigabe
 bench/.grader-haertung-done
 bench/.a5-lesart
 *.bak-*
+.runs-view/
+bench/robustness-battery/cmd/battery/battery
+bench/robustness-battery/run-all.log
+bench/robustness-battery/sessions/
+bench/audit-scratch/robust/

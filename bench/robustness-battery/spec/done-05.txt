@@ -1,0 +1,24 @@
+05 — Batterie fuer aiux-U1-paging fertig
+Gebaut: robustness-battery/aiux-U1-paging/{battery.json,battery_test.js} (node, cwd runtime/web,
+install test/zz_battery.test.js, cmd "node --test --test-reporter=tap test/zz_battery.test.js",
+real ZZBatReal, path ZZBatPath, timeout 150). Real 11, Path 4, je Test WHY, deterministisch
+(host-fixture.js + createRuntime, kein Zufall/Zeit/Netz), je Tool-Aufruf Timeout-Race.
+Real (Brief-Vertrag des Paging-Kontrakts): erste Seite voll, limit=1-Blaettern ohne
+Verlust/Doppelung, limit=n und n+1, riesiges limit, Off-by-one letzte Seite (offset n-1/n/n+5),
+totalMembers konstant, limit=3-Blaettern stabil, wiederholte Aufrufe identisch, zweite
+Fixture-Klasse (Catalogue), leerer Typ (total 0). Path (nur kein Crash/Hang, strukturierte
+Antwort): negative/gebrochene Offsets, NaN/undefined/null-Seiten, absurde Groessen (0, negativ,
+1e9, MAX_SAFE_INTEGER, Offset 1e7), Nicht-Arrays (String/null-arguments, Zahl/Array/Objekt).
+Selbsttest audit-scratch/robust/aiux-U1-paging/: Baseline real 5/11, path 4/4 — reisst genau die
+6 Kern-Real-Tests am Off-by-one der Baseline (offset+limit-1). PASS-Abgaben cc-opus48, dsh-v4-flash,
+oc-v4-pro, qwen36moe-vulkan, muse-vulkan je real 11/11, path 4/4; zweimal laufen = identisch
+(sha256 ueber TAP-Zeilen), ~0.15 s je Lauf (Gesamtlauf < 2 s < 60 s); Runner ueber alle 13 Labels
+(agy-37flash, agy-37flash-low, cc-opus48, cc-opus5, codernext-vulkan, dsh-v4-flash, dsh-v4-pro,
+muse-vulkan, oc-gemini37f, oc-v4-flash, oc-v4-pro, qwen36moe-vulkan, qwen38-vulkan): 13/13
+buildable, real 11/11, path 4/4, results.json (Schema 2) aktualisiert, runs/ unberuehrt.
+Offen: (1) keine FAIL-Abgabe vorhanden (letzte Zeile je Label durchgaengig PASS) — die
+FAIL-Validierung traegt die Baseline, die unter dem Grader durchfaellt; (2) Runner-Fix
+cmd/battery/main.go parseTAP: failed:null statt [] bei lauter gruenen Node-Tests
+(Schema-2-Verletzung) auf leere Slice korrigiert, nur Node-Pfad, Go-Ergebnisse unveraendert
+(go vet ok); (3) ein synchroner Hang in describe_type ist in node nicht preemptbar — async-
+Haenger faengt das Test-Timeout, ein echter sync-Hang wird vom Runner-Timeout (150 s) buildable:false.

@@ -1,0 +1,21 @@
+08 — Dashboard-Integration (alle 8 Tasks) fertig
+Gebaut: /api/robustness (labdata.read_robustness) + robust-Feld je /api/suite-Entry
+(real_pass/real_total/path_pass/path_total/buildable/failed/stale, sonst null).
+Staleness = Fingerprint-Vergleich nach Runner-Regel (sha256 ueber sortierte
+Nicht-Test-Quellen unter ws/cwd), 30-s-Cache (labcore.CACHE). Serverseitig als
+Node-Selbsttest gegen results.json verifiziert: 61/61 gespeicherte Fingerprints
+stimmen mit der Neuberechnung ueberein; keine stale Paare. Scores (Zusammenfassung):
+dsh-v4-flash/oc-v4-flash/cc-opus5 u.a. 98 % (R 49/50), codernext 84 % (R 42/50),
+qwen36moe 90,7 % — Deckungsgrad derzeit n=5/8 (A1 leer, U2 noch nicht gelaufen).
+app.js Suite-Ansicht: Mini-Zeile 'R x/y · P x/y' je Zelle ('n. baubar', ⟳ stale),
+Detail listet gerissene Tests; Spalte GANZ RECHTS 'Robustheit' (Prozent+Mini-Balken+n/8);
+Balkengraph 'Robustheit ueber alle Suite-Tasks' unter Gesamtzeit-Graph, sortiert nach
+real_score, Balken=real_score, Pill=P (Path-Quote), Klick klappt per_task auf, Legende
++ Link auf Wiki 'robustheit'. Laeufe-Tab: Job-Typ 'robustheit' (CPU-Slot, kein GPU-Lock)
+fuehrt run-all.sh aus (--force per Checkbox), Log im Job-Log; Slots-Leiste + Sysbar
+zeigen CPU. Wiki dashboard/wiki/robustheit.md (deutsch, in wiki.json unter Konzepte).
+Nur vorhandene Design-Tokens, beide Themes, tabular-nums. node --check app.js OK.
+Host-Pruefer: Python-Kompilierung der drei geaenderten Dateien pruefen, Server starten,
+dann GET /api/robustness (Schema siehe read_robustness) und /api/suite (robust-Feld),
+Suite-Ansicht und Laeufe-Tab manuell durchklicken (Job robustheit startbar, CPU-Chip).
+Offen: keine. U2/A1-Luecken in results.json schliesst der naechste Runner-Lauf von selbst.

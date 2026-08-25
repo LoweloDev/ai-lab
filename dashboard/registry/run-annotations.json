@@ -20,5 +20,10 @@
   "label": "codernext (abgebrochen)",
   "hidden": true,
   "note": "80B-Polyglot auf Tobias' Anweisung 25.08. 00:15 nach 12/73 abgebrochen (GPU fuer Retries + Kandidaten-Runde freigemacht). Kein Benchmark-Ergebnis."
+ },
+ "oc:dsh-flash-smoke": {
+  "label": "dsh Smoke",
+  "hidden": true,
+  "note": "Technischer Probelauf des dsh-Polyglot-Runners (1 Uebung, 25.08. 00:40) — kein Benchmark."
  }
 }

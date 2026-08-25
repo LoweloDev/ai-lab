@@ -1,0 +1,23 @@
+02 — Batterie fuer agora-A4-feed fertig
+Gebaut: robustness-battery/agora-A4-feed/{battery.json,battery_test.go}
+  (go, cwd agora-backend, install internal/feed/zz_battery_test.go,
+  cmd "go test ./internal/feed/ -run ZZBat -count=1 -json -timeout 110s",
+  real_prefix ZZBatReal, path_prefix ZZBatPath, timeout 150).
+Real 10, Path 6. Real: Mix-Invariante ueber 4 Eingabe-Anordnungen, gemeinsames
+Thema an zweiter Slug-Position, Score-Gleichstand, Mix ueber 2 Seiten,
+Determinismus, Ein-Thema-Pool, leere TopicSlugs, Konservierung (60 Items),
+Live-Kadenz unter Mix, Handy 1 Beitrag/Seite. Path: leerer Pool, NaN, +/-Inf,
+Duplikat-IDs, riesiger Pool (200), PageSize 0/negativ. Jeder Test mit WHY-
+Kommentar, deterministisch, eigener Timeout in Goroutine mit Panic-Fang.
+Selbsttest unter audit-scratch/robust/agora-A4-feed/ (Wegwerf-Kopien):
+  Baseline:      real 5/10, path 6/6  — reisst genau die 5 Mix-Tests am Bug.
+  PASS-Abgaben:  agy-37flash, dsh-v4-pro, oc-v4-flash je real 10/10, path 6/6.
+  FAIL-Abgabe:   codernext-vulkan real 5/10, path 6/6 (Diversity-Bug nie gefixt).
+Zweimal laufen = identisch (16/16 bzw. 11 pass / 5 fail). Laufzeit je Label ~1.1 s.
+Runner: ./run-all.sh --task agora-A4-feed --force -> 12 Paare in 3.5 s; alle 11
+PASS-Abgaben 10/10+6/6, codernext-vulkan 5/10+6/6 (Kern-Real-Tests reissen dort,
+wo der Task liegt). Zweiter Aufruf ohne --force: 0.05 s, results.json
+byte-identisch. Kein zz_battery_test.go oder tmp unter runs/ zurueckgeblieben.
+Offen: keine. Hinweis: der Slug-Positions-Test setzt Slug-Listen-Vergleich ueber
+alle Positionen voraus (so in der Baseline-API angelegt); alle 11 PASS-Abgaben
+fixen exakt diese Funktion und bestehen ihn.

@@ -13,7 +13,9 @@ while [ ! -f "$M/.kandidaten-download-ok" ] || ! grep -q "A5A6-RETRY KOMPLETT" "
 # Grader-Haertung (Audit 24.08.) laeuft nach den Retries; erst danach starten, damit die
 # Kandidaten mit denselben (gehaerteten) Gradern bewertet werden wie alle Regrades.
 while [ ! -f "$HOME/ai-lab/bench/.grader-haertung-done" ]; do sleep 120; done
-log "Download komplett + GPU frei + Haertung '$(cat "$HOME/ai-lab/bench/.grader-haertung-done")' — Kandidaten-Runde startet"
+# Tobias 25.08. ~02:05: erst die Qwen-Modelle via OpenCode durch Polyglot (Harness-Fairness), dann Kandidaten.
+while [ ! -f "$HOME/ai-lab/bench/.oc-lokal-polyglot-done" ]; do sleep 300; done
+log "Download komplett + GPU frei + Haertung '$(cat "$HOME/ai-lab/bench/.grader-haertung-done")' + OC-Polyglot lokal '$(cat "$HOME/ai-lab/bench/.oc-lokal-polyglot-done")' — Kandidaten-Runde startet"
 
 serve_and_wait() { # serve_and_wait <serve-name>
   pkill -x llama-server 2>/dev/null; sleep 3

@@ -1,0 +1,12 @@
+{
+  "task": "agora-A2-jsonld",
+  "lang": "node",
+  "cwd": "agora-web",
+  "install": [
+    { "src": "battery_test.mjs", "dst": "tests/zz_battery.test.mjs" }
+  ],
+  "cmd": "node --test --test-reporter=tap tests/zz_battery.test.mjs",
+  "real_prefix": "ZZBatReal",
+  "path_prefix": "ZZBatPath",
+  "timeout": 150
+}

@@ -41,9 +41,9 @@ Dashboard: `http://127.0.0.1:8100` (`dashboard/start.sh`), liest alles aus Datei
    (`audit-scratch/haertung/validierung.md`); `bench/apply-haertung.sh` (547 Z.) mit Trockenlauf bestanden,
    adversarialer Review: Freigabe nach 4 Fixes (Sandbox-Vollanwendung liefert exakt die 8 erwarteten
    A5-Flips unter Vertragslesart, unter streng 0). Bericht: `bench/haertung-report.md`.
-   **`bench/.haertung-freigabe` ist GESETZT (01:08)** → `haertung-waechter.sh` wendet nach
-   `A5A6-RETRY KOMPLETT` automatisch an (rc 2 = beschäftigt → bis 6x alle 10 min erneut), dann Marker
-   `.grader-haertung-done` = 'OK … flips=0' und die Kandidaten-Runde startet mit gehärteten Gradern.
+   **ANGEWENDET 02:29: Marker 'OK 20260825-022854 flips=0 lesart=streng'**, 98 Regrades, results.jsonl
+   unverändert, Backups grade.v1.sh + results.jsonl.bak-audit-20260825-022854. Rollback siehe Kopf von
+   apply-haertung.sh. A5-Lesart umschalten: `echo vertrag > bench/.a5-lesart && bash bench/apply-haertung.sh`.
    Manuell nachholen: `bash bench/apply-haertung.sh --dry-run` lesen, dann ohne Flag ausführen.
    Rollback: `grade.v1.sh`/`grade_test.v1.go` + `results.jsonl.bak-audit-*`.
    Batterien fertig: A5 (`robustness-battery/a5-results.md`, 9 Lösungen 11/12, gleiche Kante) und
@@ -94,7 +94,7 @@ Dashboard: `http://127.0.0.1:8100` (`dashboard/start.sh`), liest alles aus Datei
 ## Nachtrag 00:25 — Flash-low-Suite geplant + Tobias' Zwischenfazit
 - `bench/agy-low-suite.sh` läuft (Hintergrund, Start ~02:39 nach Quota-Reset): Gemini 3.7 Flash effort=low
   durch alle 8 Suite-Tasks, Label `agy-37flash-low`, danach `bench/agy-low-tokens.md` (Token-Bilanz vs. high).
-  Ende: `AGY_LOW_SUITE_KOMPLETT`. Damit ist das Thema "Flash/Abo" laut Tobias erstmal abgeschlossen.
+  FERTIG 02:58: low 7/8 = high 7/8, 481 s vs 907 s, Output 53k vs 170k, Thinking 6,6k vs 109k → Thema Flash/Abo abgeschlossen.
 - Tobias' Zwischenfazit (00:25): Flash "insane"; Runner-up DeepSeek via OpenCode; Claude das Beste, aber
   mit Abstand das Teuerste. Offen für sein Urteil: Härtungs-Ergebnis (Regrades) + Robustheits-Batterien.
 
@@ -129,3 +129,37 @@ Dashboard: `http://127.0.0.1:8100` (`dashboard/start.sh`), liest alles aus Datei
 - Download der Kandidaten ist komplett (01:36, 3/3 OK); Robustheits-Dashboard-Workflow gestoppt
   (Quota), Spezifikation liegt im Workflow-Skript robustheit-suite-dashboard-opus-*.js — kann von einem
   DeepSeek-/Gemini-Agenten oder nach Quota-Reset fortgesetzt werden.
+
+## Nachtrag 02:00 — Robustheits-Umbau via DeepSeek (OpenCode), Harness-Korrektur
+- Harness-Vergleich DeepSeek (Rohdaten): Suite-Summe oc-flash 889 s vs dsh-flash 1331 s (OC 1,5x schneller),
+  Qualität 7/8 beide; Polyglot auf 35 gemeinsamen Übungen OC 31/34 vs dsh 30/35 (gleichauf), OC 35 % günstiger.
+  → Zweigeteilt (Stand 02:45, dsh-Polyglot komplett 68/73 p1, 73/73 p2, 0,32 $): **Genauigkeit dsh, Tempo/Preis OpenCode.**
+  (Claudes frühere Behauptung "dsh 2x schneller" war falsch.)
+- dsh-pro-Polyglot gestrichen (Tobias); dsh-flash-Polyglot FERTIG 02:44 (Label dsh-flash-polyglot).
+- Umbau "Robustheit über alle 8 Suite-Tasks als Dashboard-Metrik" läuft als `bench/robustness-battery/umbau-dsh.sh`
+  (HARNESS=oc, DeepSeek flash): 8 Aufträge nach `robustness-battery/spec/0*.md` (Konvention 00; Runner in Go 01;
+  Batterien 02–07; Dashboard 08), je Auftrag eine Container-Session mit ro-Lab + rw nur auf robustness-battery/,
+  dashboard/, audit-scratch/robust/; Secrets per tmpfs überdeckt. Fortschritt: `spec/done-NN.txt`, Log `umbau.log`,
+  Transkripte `sessions/NN/`. Ende: `UMBAU-DSH KOMPLETT`. Danach: EIN Opus-5-Agent (oder Claude) validiert auf dem Host
+  (py_compile, Dashboard-Neustart ohne laufende Jobs, /api/robustness, Determinismus) — siehe Workflow-Skript
+  robustheit-suite-dashboard-opus-*.js für die Prüfliste.
+
+## Nachtrag 02:10 — GPU-Reihenfolge geändert: OC-Polyglot für die lokalen Qwens VOR den Kandidaten
+- Tobias: Harness-Fairness — die Lokalen liefen Polyglot nur über Aider. `bench/polyglot-oc/oc-lokal-kette.sh`
+  wartet auf `.grader-haertung-done`, dann je Modell serve.sh + `OC_CONFIG=opencode-config T_ATTEMPT*=600
+  run-polyglot-oc.sh llamacpp/local oc-<m>-polyglot`: qwen36moe (~3,5 h) → codernext (~5 h) → qwen38 (~7 h).
+  Marker `bench/.oc-lokal-polyglot-done`; Kandidaten-Kette wartet jetzt zusätzlich darauf. Reihenfolge
+  ändern: Kette stoppen und mit Modell-Argumenten neu starten (`oc-lokal-kette.sh qwen36moe`), oder qwen38
+  weglassen, wenn das Muster nach zwei Modellen klar ist.
+- run-polyglot-oc.sh: Key-Pflicht nur noch für Cloud-Modelle, Timeouts per Env überschreibbar.
+- Umbau-Treiber: erster Lauf scheiterte an OpenCodes 'external_directory'-Auto-Reject (cwd war das
+  Batterie-Verzeichnis) → cwd = Lab-Wurzel; zweiter Fehlversuch davor: 42 tmpfs-Schatten → crun 'No space
+  left' → jetzt hardgelinkte, secret-freie Sicht `bench/.runs-view` (gitignored). Läuft seit 02:08.
+- 02:20 Zeitbremse in oc-lokal-kette.sh: qwen36moe/codernext 6 h, qwen38 4 h; bei Ablauf `--summary-only`
+  (neu im OC-Runner) + Annotation "(Zeitlimit, n/73)" sichtbar im Polyglot-Tab (Teilergebnis = Stichprobe).
+- Flash-low-POLYGLOT FERTIG 03:22: 73/73 pass@1 in 33 min (high 74 min), Output 209k vs 888k, Thinking 68k vs 684k.
+  Effort-Kapitel abgeschlossen (Suite + Polyglot): low = gleiche Qualität, halbe Zeit.
+- 03:15 Umbau FERTIG (8/8 done, 104 Paare in results.json, 8 Batterien: A1 R10/P6, A2 R10/P5, A3 R9/P5,
+  A4 R10/P6, A5 R7/P5, A6 R12/P9, U1 R11/P4, U2 R10/P4; Kosten ≈0,3 $). Host: py_compile + node --check ok.
+  Opus-5-Prüfer läuft (Determinismus, Plausibilität, Server-Neustart, /api/robustness, Job, Wiki) →
+  `bench/robustness-battery/pruefbericht.md` mit FREIGABE JA/NEIN. Bis dahin läuft das Dashboard noch mit altem Code.

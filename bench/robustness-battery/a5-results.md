@@ -79,3 +79,31 @@ Verlust oder Endlosschleife aus.
    Live-Pool, 200er-Pool, PageSize-Grenzen) hält ebenfalls jede baubare Lösung ein.
 4. Kein Modell hat einen `TestMain`-/`os.Exit`-Hijack in seinen Testdateien (vorab geprüft);
    die Batterie lief also überall wirklich.
+
+---
+
+## Nachtrag 25.08.2026 (Host-Prüfung des generischen Runners)
+
+Die Tabelle oben ist eine **Momentaufnahme vom 24.08.** Der generische Runner
+(`run-all.sh` → `results.json`) rechnet seither dieselbe Batterie über alle vorhandenen
+Labels; drei Zeilen weichen inzwischen ab, jeweils aus Gründen außerhalb der Batterie:
+
+| Label | oben | jetzt | Grund |
+|---|---|---|---|
+| `qwen36moe-vulkan` | nicht baubar | Real 6/7 · **Path 3/5** | Der Nachzügler-Retry (`nachzuegler-a5a6-retry.sh`) hat den Workspace am 25.08. um 02:41 neu befüllt; es gibt jetzt eine Abgabe. |
+| `agy-37flash-low` | — | Real 6/7 · Path 5/5 | Label existierte beim Snapshot noch nicht. |
+| `codernext-vulkan` | — | Real 5/7 · Path 5/5 | Label existierte beim Snapshot noch nicht; reißt zusätzlich `AllLivePool`. |
+
+**Die beiden Path-Risse von `qwen36moe-vulkan` sind echte Funde**, keine Batterie-Artefakte —
+reproduziert auf einer Wegwerf-Kopie:
+
+- `TestZZBatPathPageSizeZero`: `BuildBatches` kehrt bei `PageSize: 0` nicht zurück (Endlosschleife,
+  vom 5-s-Timeout des Tests gefangen).
+- `TestZZBatPathPageSizeNegative`: `BuildBatches` panickt bei negativer `PageSize` mit
+  `runtime error: makeslice: len out of range`.
+
+Damit gilt Punkt 2 der Einordnung („Robustheit gegen kaputte Eingaben ist durch die Bank gut")
+nur noch für die 9 Lösungen des Snapshots, nicht mehr pauschal.
+
+Maßgeblich für aktuelle Zahlen ist `results.json` bzw. das Dashboard (Suite → Robustheit);
+dieses Dokument bleibt die ausführliche Analyse des Snapshots.

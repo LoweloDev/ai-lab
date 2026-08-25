@@ -24,9 +24,10 @@ from labcore import (BENCH, WEBAPP, RUNSD, MODELS_DIR, LAB, SERVE_SH, TMPB,
                      LABEL_RE, MODELID_RE, CACHE)
 import labregistry
 
-LIMITS = {'gpu': 1, 'cloud': 3, 'download': 2}
-CLASS_NAMES = {'gpu': 'GPU', 'cloud': 'Cloud', 'download': 'Download'}
+LIMITS = {'gpu': 1, 'cloud': 3, 'download': 2, 'cpu': 1}
+CLASS_NAMES = {'gpu': 'GPU', 'cloud': 'Cloud', 'download': 'Download', 'cpu': 'CPU'}
 POLY_SCRIPT = os.path.join(BENCH, 'aider', 'run-polyglot-subset.sh')
+ROBUST_SCRIPT = os.path.join(BENCH, 'robustness-battery', 'run-all.sh')
 
 _LOCK = threading.Lock()
 JOBS = {}
@@ -339,8 +340,27 @@ def build_job(p):
                 'timeout': _int_or(p.get('timeout'), 14400, 300, 43200, 'Timeout'),
                 'model': mid, 'params': {'model': mid, 'url': url}}
 
+    if action == 'robustheit':
+        if not os.path.isfile(ROBUST_SCRIPT):
+            raise ValueError('run-all.sh fehlt — Robustheits-Batterie nicht '
+                             'verfügbar (bench/robustness-battery/).')
+        argv = ['bash', ROBUST_SCRIPT]
+        if p.get('force'):
+            argv.append('--force')
+        with _LOCK:
+            act = [j for j in JOBS.values()
+                   if j['class'] == 'cpu' and j['status'] == 'läuft']
+        if len(act) >= LIMITS['cpu']:
+            raise ValueError('CPU-Slot belegt (max. 1 Robustheits-Lauf).')
+        return {'class': 'cpu',
+                'steps': [{'type': 'exec', 'name': 'run-all.sh',
+                           'argv': argv, 'cwd': os.path.dirname(ROBUST_SCRIPT)}],
+                'desc': 'Robustheit neu berechnen (Batterie über alle Abgaben)',
+                'timeout': _int_or(p.get('timeout'), 3600, 120, 14400, 'Timeout'),
+                'params': p}
+
     raise ValueError('Unbekannte Aktion — erlaubt: suite, suite-api, dom, uxdom, '
-                     'polyglot, serve, download.')
+                     'polyglot, serve, download, robustheit.')
 
 
 # ------------------------------------------------------------ Ausführung

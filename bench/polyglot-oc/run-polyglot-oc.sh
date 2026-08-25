@@ -24,11 +24,12 @@ set -uo pipefail
 usage() { echo "usage: $0 <model-id> <label> [--langs python,go] [--limit N]" >&2; exit 2; }
 [ $# -ge 2 ] || usage
 MODEL_ID="$1"; LABEL="$2"; shift 2
-LANGS="python,go"; LIMIT=0
+LANGS="python,go"; LIMIT=0; SUMMARY_ONLY=0
 while [ $# -gt 0 ]; do
   case "$1" in
     --langs) LANGS="$2"; shift 2 ;;
     --limit) LIMIT="$2"; shift 2 ;;
+    --summary-only) SUMMARY_ONLY=1; shift ;;   # nur summary.json aus vorhandenen result.json neu schreiben (nach Zeitlimit-Abbruch)
     *) usage ;;
   esac
 done
@@ -38,9 +39,11 @@ SRC="$BENCH/aider/polyglot-benchmark"
 RUN_DIR="$BENCH/polyglot-oc/runs/$LABEL"
 OC_CONFIG="${OC_CONFIG:-opencode-config-api}"
 LOG="$RUN_DIR/run.log"
-T_ATTEMPT1=240 T_ATTEMPT2=300 T_TEST=180
+T_ATTEMPT1="${T_ATTEMPT1:-240}" T_ATTEMPT2="${T_ATTEMPT2:-300}" T_TEST="${T_TEST:-180}"
 
-[ -n "${DEEPSEEK_API_KEY:-}" ] || { echo "DEEPSEEK_API_KEY nicht gesetzt (source ~/ai-lab/.env)" >&2; exit 2; }
+# Key nur fuer Cloud-Modelle Pflicht; lokale Modelle (llamacpp/…) laufen gegen den llama-server auf dem Host.
+case "$MODEL_ID" in llamacpp/*) export DEEPSEEK_API_KEY="${DEEPSEEK_API_KEY:-}" ;;
+  *) [ -n "${DEEPSEEK_API_KEY:-}" ] || { echo "DEEPSEEK_API_KEY nicht gesetzt (source ~/ai-lab/.env)" >&2; exit 2; } ;; esac
 [ -d "$BENCH/$OC_CONFIG" ] || { echo "Config-Dir fehlt: $BENCH/$OC_CONFIG" >&2; exit 2; }
 mkdir -p "$RUN_DIR"
 
@@ -208,6 +211,7 @@ for lang in ${LANGS//,/ }; do
   while IFS= read -r n; do LIST+=("$lang/$n"); done < <(ls -1 "$d")
 done
 [ "$LIMIT" -gt 0 ] && LIST=("${LIST[@]:0:$LIMIT}")
+[ "$SUMMARY_ONLY" = 1 ] && LIST=()
 N=${#LIST[@]}
 
 RUN_START=$(date +%s)

@@ -1,0 +1,24 @@
+04 — Batterie fuer agora-A3-hls fertig
+Gebaut: robustness-battery/agora-A3-hls/{battery.json,battery_test.go} (go,
+cwd agora-backend, install internal/livehls/zz_battery_test.go, cmd "go test
+./internal/livehls/ -run ZZBat -count=1 -json -timeout 110s", real ZZBatReal,
+path ZZBatPath, timeout 150). Real 9, Path 5, je Test mit WHY, deterministisch
+(keine Zeit/Netz; einzige Nebenwirkung ein read-only Blick auf die gepinnte
+deploy/hls-cache-headers.yml), Panic-Fang je Path-Messung.
+Real: .webm immutable + video/webm (live/clips/init-Formen), case-insensitive,
+tiefe Unterverzeichnisse, SegmentExtensions() fuehrt .webm und nie Manifests,
+bestehende Segmente (.ts/.m4s/.mp4/.m4v/.m4a/.aac) unveraendert, Playlists
+mutabel auch mit Query-String (voller Vertrag, nie Segment/immutable),
+unbekannte Keys mit/ohne Query nie immutable, Policy<->Klasse konsistent,
+Edge-Config-PathRegexp-Alternation enthaelt webm.
+Path: leere/Whitespace-Keys, sehr lange Keys (bis 65k Zeichen), Sonderzeichen/
+Unicode inkl. Segment-Key mit Query, Traversal-Strings, doppelte+abschliessende
+Slashes.
+Selbsttest audit-scratch/robust/agora-A3-hls/: Baseline real 3/9, path 5/5 —
+reisst genau die 6 webm-abhaengigen Real-Tests (inkl. Edge-Config-Kopplung).
+PASS-Abgaben cc-opus48, dsh-v4-pro, oc-v4-flash je real 9/9, path 5/5; zweimal
+laufen = identisch, ~0.1 s (< 60 s), runs/ unberuehrt.
+Offen: codernext-vulkan (FAIL test-file-modified) besteht die Batterie ebenfalls —
+sein Code war fachlich korrekt, nur die Kept-Testdatei manipuliert, was unter
+-run ZZBat nicht sichtbar wird; Segment-Key mit Query-String als dokumentierter
+Path-Befund (keine Abgabe strippt die Query vor path.Ext).

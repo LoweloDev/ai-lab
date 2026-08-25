@@ -11,11 +11,11 @@ const S = {
   route: null,
   state: null,               // /api/state (Systemzustand)
   names: {},                 // Modell-ID -> Anzeigename (aus Registry)
-  sel: { poly: null, suiteCell: null, ux: null, wiki: null, job: null, domT: null },
+  sel: { poly: null, suiteCell: null, robLabel: null, ux: null, wiki: null, job: null, domT: null },
   toggles: { polyHidden: false, suiteOld: false },
   wiz: { step: 1, bench: null, model: null, model_id: '', tasks: [], all_tasks: false,
          dom_task: 'info', backend: 'vulkan', ctx: '', extra_flags: '', timeout: '',
-         label: '', start_server: false },
+         label: '', start_server: false, force: false },
   compMsg: null, runMsg: null, confirmDel: null, editModel: null,
   fastT: null,
 };
@@ -196,8 +196,9 @@ function renderSysbar() {
     ? '<span class="syschip">◻ Testseite :8090 läuft</span>'
     : '<span class="syschip off">◻ Testseite :8090 aus</span>');
   const sl = st.slots;
-  if (sl && (sl.gpu.used || sl.cloud.used || sl.download.used)) {
-    bits.push(`<span class="syschip run">⏳ Jobs: ${sl.gpu.used} GPU · ${sl.cloud.used} Cloud · ${sl.download.used} DL</span>`);
+  if (sl && (sl.gpu.used || sl.cloud.used || sl.download.used || (sl.cpu && sl.cpu.used))) {
+    const cpu = sl.cpu && sl.cpu.used ? ` · ${sl.cpu.used} CPU` : '';
+    bits.push(`<span class="syschip run">⏳ Jobs: ${sl.gpu.used} GPU · ${sl.cloud.used} Cloud · ${sl.download.used} DL${cpu}</span>`);
   }
   sysbar.innerHTML = bits.join('');
 }
@@ -273,7 +274,21 @@ function renderUebersicht(d) {
 }
 
 /* ================================================================ Suite */
-function renderSuite(d) {
+const robMini = r => r.buildable === false ? '<span class="dim">n. baubar</span>'
+  : `${r.stale ? '⟳ ' : ''}R ${r.real_pass}/${r.real_total} · P ${r.path_pass}/${r.path_total}`;
+const robDetail = r => {
+  if (r.buildable === false)
+    return `<span class="muted">n. baubar</span>${r.error ? ' — <code>' + esc(r.error) + '</code>' : ''}`;
+  let s = `R ${r.real_pass}/${r.real_total} · P ${r.path_pass}/${r.path_total} · baubar`;
+  if (r.stale) s += ' ⟳ <span class="muted">veraltet</span>';
+  if (r.failed && r.failed.length)
+    s += '<div class="small muted" style="margin-top:4px">gerissen: ' +
+      r.failed.map(f => '<code>' + esc(f) + '</code>').join(' · ') + '</div>';
+  return s;
+};
+
+function renderSuite(d, rob) {
+  rob = rob || { scores: {}, stale: [] };
   const last = new Map(), hist = new Map();
   for (const e of d.entries) {
     const k = e.model + ' ' + e.task;
@@ -284,16 +299,35 @@ function renderSuite(d) {
     const i = t.indexOf('-');
     return `<th><span class="grp">${esc(i > 0 ? t.slice(0, i) : '')}</span>${esc(i > 0 ? t.slice(i + 1) : t)}</th>`;
   }).join('');
+  const robHead = '<th class="robth" title="Robustheit: Zusatz-Metrik — ändert keine Urteile">Robustheit</th>';
   const rows = d.labels.map(lbl => {
     const cells = d.tasks.map(t => {
       const k = lbl + ' ' + t;
       const e = last.get(k);
       if (!e) return '<td class="cell none">–</td>';
       const selCls = S.sel.suiteCell === k ? ' sel' : '';
+      const mini = e.robust
+        ? `<span class="mini-rob">${robMini(e.robust)}</span>` : '';
+      const tip = e.robust && e.robust.failed && e.robust.failed.length
+        ? '\nRobustheit: ' + e.robust.failed.join(', ') : '';
       return `<td class="cell ${e.pass ? 'ok' : 'bad'}${selCls}" data-act="cell" data-id="${esc(k)}"
-        title="${esc(e.grade)}">${e.pass ? '✓' : '✗'} ${fmtSec(e.seconds)}</td>`;
+        title="${esc(e.grade)}${esc(tip)}">${e.pass ? '✓' : '✗'} ${fmtSec(e.seconds)}${mini}</td>`;
     }).join('');
-    return `<tr><td class="rowh">${esc(labelName(lbl))}<span class="sub">${esc(lbl)}</span></td>${cells}</tr>`;
+    const s = rob.scores[lbl];
+    const robCell = s && s.real_total > 0 ? (() => {
+      const pct = Math.round(100 * s.real_score);
+      const col = pct === 100 ? 'var(--good)' : pct >= 60 ? 'var(--warn)' : 'var(--crit)';
+      const stale = rob.stale.some(x => x[1] === lbl) ? ' ⟳' : '';
+      /* n_missing > 0: der Score liess Tasks weg (nicht baubar) und ist mit den
+         vollstaendigen Labels NICHT vergleichbar — sichtbar markieren, nicht nur
+         im n/8 verstecken. */
+      const part = s.n_missing ? ' rob-part' : '';
+      return `<td class="cell robcol${part}" title="Robustheit: ${pct}% · R ${s.real_pass}/${s.real_total} · P ${s.path_pass}/${s.path_total}${stale}${s.n_missing ? ` · ACHTUNG: ${s.n_missing} von 8 Tasks nicht baubar und aus dem Score herausgerechnet — nicht mit vollstaendigen Labels vergleichbar` : ''}">
+        <span class="rob-pct">${pct}<span class="dim">%</span></span>${stale}
+        <span class="minibar rob-bar"><span style="width:${pct}%;background:${col}"></span></span>
+        <span class="rob-sub">${s.n_missing ? '⚠ ' : ''}${s.n_tasks}/${s.n_tasks + s.n_missing}</span></td>`;
+    })() : '<td class="cell none robcol">–</td>';
+    return `<tr><td class="rowh">${esc(labelName(lbl))}<span class="sub">${esc(lbl)}</span></td>${cells}${robCell}</tr>`;
   }).join('');
   let detail = '';
   if (S.sel.suiteCell && last.has(S.sel.suiteCell)) {
@@ -307,31 +341,36 @@ function renderSuite(d) {
           <dt>Dauer</dt><dd>${fmtSec(e.seconds)}</dd>
           <dt>Exit-Code</dt><dd>${esc(e.exit)}${e.exit === 137 ? ' <span class="muted">(Timeout/SIGKILL — Grade zählt trotzdem)</span>' : ''}</dd>
           <dt>Änderungen</dt><dd>${esc((e.changed || '').trim() || 'keine')}</dd>
+          ${e.robust ? `<dt>Robustheit</dt><dd>${robDetail(e.robust)}</dd>` : ''}
           ${h.length > 1 ? `<dt>Versuche</dt><dd>${h.length} — ältere: ${h.filter(x => x.superseded).map(x => (x.pass ? '✓' : '✗') + ' ' + fmtSec(x.seconds)).join(' · ')}</dd>` : ''}
         </dl>
       </div>`;
   }
-  /* Gesamtzeit-Graph: Summe der jeweils letzten Versuche je Modell-Label */
+  /* Gesamtzeit-Graph: Summe der jeweils letzten Versuche je Modell-Label.
+     Timeouts (exit 124/137) werden als eigenes, schraffiertes Segment gezeigt und aus der
+     Arbeitszeit herausgerechnet — sonst dominieren zwei 60-min-Abbrueche jede Bilanz. */
+  const isTimeout = e => e.exit === 137 || e.exit === 124;
   const agg = d.labels.map(lbl => {
-    let sec = 0, ok = 0, n = 0;
+    let sec = 0, tsec = 0, ok = 0, n = 0, nt = 0;
     for (const t of d.tasks) {
       const e = last.get(lbl + ' ' + t);
       if (!e) continue;
-      n++; sec += e.seconds || 0; if (e.pass) ok++;
+      n++; if (e.pass) ok++;
+      if (isTimeout(e)) { tsec += e.seconds || 0; nt++; } else sec += e.seconds || 0;
     }
-    return { lbl, sec, ok, n };
-  }).filter(a => a.n > 0).sort((a, b) => a.sec - b.sec);
-  const maxSec = Math.max(1, ...agg.map(a => a.sec));
+    return { lbl, sec, tsec, ok, n, nt, tot: sec + tsec };
+  }).filter(a => a.n > 0).sort((a, b) => a.tot - b.tot);
+  const maxSec = Math.max(1, ...agg.map(a => a.tot));
   const chart = !agg.length ? '' : `
     <h3 class="sec">Gesamtzeit je Modell
-      <span class="muted small">Summe der letzten Versuche · Balkenfarbe: <span style="color:var(--accent)">alles PASS</span> / <span style="color:var(--warn)">mit FAILs</span> · Tasks abgedeckt: siehe n</span></h3>
+      <span class="muted small">Summe der letzten Versuche · <span style="color:var(--accent)">alles PASS</span> / <span style="color:var(--warn)">mit FAILs</span> · <span class="sw-hatch"></span> Timeout-Anteil (Limit erreicht, nicht Arbeitszeit)</span></h3>
     <div class="card bars">${agg.map(a => `
       <div class="bar-row">
         <div class="bar-lbl">${esc(labelName(a.lbl))}
-          <span class="sub">${a.ok}/${a.n} PASS · ø ${fmtSec(a.sec / a.n)}/Task</span></div>
-        <div class="bar-track" title="${esc(labelName(a.lbl))}: ${fmtSec(a.sec)} über ${a.n} Tasks">
-          <div class="bar-fill${a.ok === a.n ? '' : ' part'}" style="width:${Math.max(2, a.sec / maxSec * 100)}%"></div>
-          <span class="bar-val">${fmtSec(a.sec)} <span class="muted">(n=${a.n})</span></span>
+          <span class="sub">${a.ok}/${a.n} PASS · ø ${fmtSec(a.sec / Math.max(1, a.n - a.nt))}/Task ohne Timeouts${a.nt ? ` · ${a.nt} Timeout${a.nt > 1 ? 's' : ''}` : ''}</span></div>
+        <div class="bar-track" title="${esc(labelName(a.lbl))}: ${fmtSec(a.sec)} Arbeit${a.nt ? ` + ${fmtSec(a.tsec)} Timeout` : ''} über ${a.n} Tasks">
+          <div class="bar-fill${a.ok === a.n ? '' : ' part'}" style="width:${Math.max(a.sec ? 1 : 0, a.sec / maxSec * 100)}%"></div>${a.tsec ? `<div class="bar-fill hatch" style="width:${a.tsec / maxSec * 100}%"></div>` : ''}
+          <span class="bar-val">${fmtSec(a.sec)}${a.nt ? ` <span class="muted">+ ${fmtSec(a.tsec)} Timeout</span>` : ''} <span class="muted">(n=${a.n})</span></span>
         </div>
       </div>`).join('')}</div>`;
   const oldTable = S.toggles.suiteOld ? `
@@ -345,6 +384,45 @@ function renderSuite(d) {
           <td class="num">${fmtSec(e.seconds)}</td><td class="num">${esc(e.exit)}</td>
         </tr>`).join('')}</tbody>
     </table></div>` : '';
+  /* Robustheit-Graph: Zusatz-Metrik (battery), ändert keine Urteile.
+     Balken = real_score je Label, Pill = Path-Quote, Klick klappt pro-Task auf. */
+  const robRows = d.labels.map(lbl => ({ lbl, s: rob.scores[lbl] }))
+    .filter(a => a.s && a.s.real_total > 0)
+    .sort((a, b) => b.s.real_score - a.s.real_score);
+  const robChart = !robRows.length ? '' : `
+    <h3 class="sec">Robustheit über alle Suite-Tasks
+      <span class="muted small">Zusatz-Metrik, ändert keine Urteile · R realistische Kanten (voller Brief-Vertrag) · P pathologische Eingaben (nur: kein Crash/Hang/Verlust) · <a href="#/wiki" data-act="wikiLink" data-id="wiki:robustheit.md">robustheit ↗</a></span></h3>
+    <div class="card bars">${robRows.map(a => {
+      const s = a.s, pct = Math.round(100 * s.real_score);
+      const ptPct = s.path_total ? Math.round(100 * s.path_pass / s.path_total) : 0;
+      const sel = S.sel.robLabel === a.lbl;
+      const per = sel ? `<div class="rob-per">${Object.entries(s.per_task).map(([t, r]) => {
+        const cell = !r ? '<span class="muted">–</span>'
+          : r.buildable === false ? '<span class="muted">n. baubar</span>'
+          : `<span class="mono">R ${r.real_pass}/${r.real_total} · P ${r.path_pass}/${r.path_total}</span>${r.stale ? ' ⟳' : ''}`;
+        return `<div class="crow rob-per-row"><div class="clabel">${esc(t)}</div><div class="track"></div><div class="cval">${cell}</div></div>`;
+      }).join('')}</div>` : '';
+      /* Labels mit nicht baubaren Tasks stehen mit weniger Nennern oben — der Score
+         ist dann NICHT mit vollstaendigen Labels vergleichbar. Sichtbar warnen,
+         statt es im n/8 zu verstecken (Sortierung bleibt real_score, wie spezifiziert). */
+      const miss = s.n_missing
+        ? chip('warn', `${s.n_missing} Task${s.n_missing > 1 ? 's' : ''} n. baubar`,
+               `Score nur über ${s.n_tasks} baubare Tasks — nicht mit Labels über alle 8 vergleichbar.`)
+        : '';
+      return `
+      <div class="bar-row rob-row ${sel ? 'sel' : ''}${s.n_missing ? ' rob-part' : ''}" data-act="robrow" data-id="${esc(a.lbl)}">
+        <div class="bar-lbl">${esc(labelName(a.lbl))} ${miss}
+          <span class="sub">R ${s.real_pass}/${s.real_total} · P ${s.path_pass}/${s.path_total} · ${s.n_tasks} von ${s.n_tasks + s.n_missing} Tasks</span></div>
+        <div class="bar-track" title="${esc(labelName(a.lbl))}: ${pct}% real_score über ${s.n_tasks} Tasks${s.n_missing ? ` (${s.n_missing} nicht baubar, herausgerechnet)` : ''}">
+          <div class="bar-fill rob${s.n_missing ? ' part' : ''}" style="width:${Math.max(1.2, pct)}%"></div>
+          <span class="bar-val">${pct} % <span class="pill rob-pill">P ${ptPct} %</span></span>
+        </div>
+      </div>${per}`;
+    }).join('')}</div>
+    <div class="legend">
+      <span><span class="sw" style="background:var(--accent-bg);border-color:var(--accent)"></span>real_score je Label</span>
+      <span class="muted">Klick auf die Zeile klappt die Aufgaben auf · ⚠ = Score liess nicht baubare Tasks weg, nicht direkt vergleichbar</span>
+    </div>`;
   view.innerHTML = viewHead('Suite', 'Repo-Tasks · OpenCode', `
       <label class="toggle"><input type="checkbox" data-act="suiteOld" ${S.toggles.suiteOld ? 'checked' : ''}>
       ältere Versuche zeigen (${d.superseded_count})</label>`)
@@ -353,8 +431,8 @@ function renderSuite(d) {
       <span><span class="sw" style="background:var(--crit-bg);border-color:var(--crit)"></span>✗ FAIL</span>
       <span class="muted">Es zählt der jeweils letzte Versuch · Zelle anklicken für Details</span>
     </div>
-    <div class="tbl-wrap"><table class="matrix"><tr><th></th>${head}</tr>${rows}</table></div>
-    ${detail}${chart}${oldTable}`;
+    <div class="tbl-wrap"><table class="matrix"><tr><th></th>${head}${robHead}</tr>${rows}</table></div>
+    ${detail}${chart}${robChart}${oldTable}`;
 }
 
 /* ================================================================ Polyglot */
@@ -572,7 +650,7 @@ function wizSummary(meta) {
 function renderLaeufe(meta, jobs, det) {
   const w = S.wiz;
   const bench = meta.benchmarks.find(b => b.id === w.bench);
-  const needsModel = w.bench && w.bench !== 'suite-api';
+  const needsModel = w.bench && w.bench !== 'suite-api' && w.bench !== 'robustheit';
   const needsTasks = ['suite', 'suite-api'].includes(w.bench);
   const lock = meta.lock;
 
@@ -580,10 +658,11 @@ function renderLaeufe(meta, jobs, det) {
   const s1body = `
     <div class="optlist">${meta.benchmarks.map(b => {
       const gpuBlocked = b.cls === 'gpu' && lock.locked;
+      const bchip = b.cls === 'gpu' ? '⚛ GPU' : b.cls === 'cpu' ? '☰ CPU' : '☁ Cloud';
       return `
       <button class="opt ${w.bench === b.id ? 'sel' : ''}" data-act="wbench" data-id="${b.id}">
         <div><div class="ot">${esc(b.name)}
-          <span class="chip ${b.cls === 'gpu' ? '' : 'quiet'}">${b.cls === 'gpu' ? '⚛ GPU' : '☁ Cloud'}</span>
+          <span class="chip ${b.cls === 'gpu' ? '' : 'quiet'}">${bchip}</span>
           ${gpuBlocked ? chip('warn', 'GPU gesperrt', lock.reason) : ''}
           ${b.needs_8090 && !meta.port8090 ? chip('warn', ':8090 aus') : ''}</div>
         <div class="os">${esc(b.desc)}</div></div>
@@ -605,6 +684,10 @@ function renderLaeufe(meta, jobs, det) {
         <div><label>oder eigene Modell-ID (anbieter/modell)</label>
           <input type="text" data-f="model_id" value="${esc(w.model_id)}" placeholder="deepseek/deepseek-v4-flash"></div>
       </div>`;
+  } else if (w.bench === 'robustheit') {
+    s2body = `
+      <p class="muted small">Kein Modell nötig — die Batterie läuft gegen alle vorhandenen Abgaben in
+        <code>bench/runs</code>. CPU, ohne GPU-Lock; die GPU bleibt frei.</p>`;
   } else if (w.bench) {
     const installed = (S.regModels || []).filter(e => e.status === 'installiert');
     const llama = meta.llama || [];
@@ -633,7 +716,8 @@ function renderLaeufe(meta, jobs, det) {
 
   /* ---- Schritt 3: Tasks + Erweitert + Start ---- */
   let s3body = '<p class="muted small">Zuerst Benchmark und Modell wählen.</p>';
-  const ready = w.bench && (w.bench === 'suite-api' ? !!w.model_id : !!w.model || w.bench === 'uxdom' || w.bench === 'dom');
+  const ready = w.bench && (w.bench === 'suite-api' ? !!w.model_id
+    : ['robustheit', 'uxdom', 'dom'].includes(w.bench) ? true : !!w.model);
   if (ready) {
     let taskSel = '';
     if (needsTasks) {
@@ -651,6 +735,13 @@ function renderLaeufe(meta, jobs, det) {
         </select></div>`;
     } else if (w.bench === 'polyglot') {
       taskSel = '<p class="muted small">Fester Umfang: 73 Übungen (python+go) — Laufzeit mehrere Stunden.</p>';
+    } else if (w.bench === 'robustheit') {
+      taskSel = `
+        <p class="muted small">Fester Umfang: alle Batterie-Tasks × alle Abgabe-Labels. Nur Paare mit
+          geändertem ws-Fingerprint werden neu gerechnet; die Ergebnisse landen in
+          <code>bench/robustness-battery/results.json</code> (Schema 2).</p>
+        <label class="toggle"><input type="checkbox" data-f="force" ${w.force ? 'checked' : ''}>
+          <code>--force</code>: alle Paare neu berechnen, auch unveränderte</label>`;
     }
     s3body = `
       <div class="form-grid">
@@ -690,7 +781,7 @@ function renderLaeufe(meta, jobs, det) {
   const wizard = `
     <div class="wizard">
       ${step(1, 'Benchmark', benchName, s1body, w.step === 1, !!w.bench)}
-      ${step(2, 'Modell', modelName, s2body, w.step === 2, !!(w.bench === 'suite-api' ? w.model_id : w.model))}
+      ${step(2, 'Modell', modelName, s2body, w.step === 2, !!(w.bench === 'suite-api' ? w.model_id : w.bench === 'robustheit' ? true : w.model))}
       ${step(3, 'Umfang & Start', ready && w.step !== 3 ? wizSummary(meta) : '', s3body, w.step === 3, false)}
     </div>`;
 
@@ -718,7 +809,8 @@ function renderLaeufe(meta, jobs, det) {
       </div>`;
   }).join('');
   const slots = jobs.slots;
-  view.innerHTML = viewHead('Läufe', `Slots: GPU ${slots.gpu.used}/${slots.gpu.max} · Cloud ${slots.cloud.used}/${slots.cloud.max} · Download ${slots.download.used}/${slots.download.max}`)
+  const cpuSlots = slots.cpu ? ` · CPU ${slots.cpu.used}/${slots.cpu.max}` : '';
+  view.innerHTML = viewHead('Läufe', `Slots: GPU ${slots.gpu.used}/${slots.gpu.max} · Cloud ${slots.cloud.used}/${slots.cloud.max} · Download ${slots.download.used}/${slots.download.max}${cpuSlots}`)
     + `<div class="laeufe-grid">
       <div>${wizard}
         <p class="muted small" style="margin-top:12px">Kein automatischer Neustart: Ein fehlgeschlagener Lauf bleibt stehen, bis du hier neu startest.</p></div>
@@ -742,7 +834,8 @@ async function startJob() {
     if (w.all_tasks) body.all_tasks = true; else body.tasks = w.tasks;
   }
   if (w.bench === 'dom') body.task = w.dom_task;
-  if (w.bench !== 'suite-api') {
+  if (w.bench === 'robustheit') body.force = w.force;
+  if (w.bench !== 'suite-api' && w.bench !== 'robustheit') {
     body.backend = w.backend;
     if (w.start_server) body.start_server = true;
     if (w.ctx) body.ctx = w.ctx;
@@ -943,7 +1036,11 @@ async function load(opts = {}) {
   if (!opts.silent) view.innerHTML = '<div class="loading">Lade …</div>';
   try {
     if (r === 'uebersicht') renderUebersicht(await api('/api/overview'));
-    else if (r === 'suite') renderSuite(await api('/api/suite'));
+    else if (r === 'suite') {
+      const [suite, rob] = await Promise.all([
+        api('/api/suite'), api('/api/robustness').catch(() => null)]);
+      renderSuite(suite, rob);
+    }
     else if (r === 'polyglot') renderPolyglot(await api('/api/polyglot' + (S.toggles.polyHidden ? '?hidden=1' : '')));
     else if (r === 'perf') renderPerf(await api('/api/perf'));
     else if (r === 'apps') {
@@ -1014,6 +1111,8 @@ view.addEventListener('click', async e => {
     case 'nav': setRoute(a.nav); break;
     case 'poly': S.sel.poly = a.id; silent(); break;
     case 'cell': S.sel.suiteCell = S.sel.suiteCell === a.id ? null : a.id; silent(); break;
+    case 'robrow': S.sel.robLabel = S.sel.robLabel === a.id ? null : a.id; silent(); break;
+    case 'wikiLink': S.sel.wiki = a.id; setRoute('wiki'); break;
     case 'ux': S.sel.ux = a.id; silent(); break;
     case 'wiki': S.sel.wiki = a.id; silent(); break;
     case 'domt': e.stopPropagation(); S.sel.domT = S.sel.domT === a.id ? null : a.id; silent(); break;
@@ -1023,7 +1122,7 @@ view.addEventListener('click', async e => {
       silent(); break;
     case 'wgoto': S.wiz.step = +a.id; silent(); break;
     case 'wbench': S.wiz.bench = a.id; S.wiz.step = 2; S.runMsg = null;
-      S.wiz.tasks = []; S.wiz.all_tasks = false; S.wiz.start_server = false; silent(); break;
+      S.wiz.tasks = []; S.wiz.all_tasks = false; S.wiz.start_server = false; S.wiz.force = false; silent(); break;
     case 'wmodel': S.wiz.model = a.id; S.wiz.step = 3; silent(); break;
     case 'wapimodel': S.wiz.model_id = a.id; S.wiz.step = 3; silent(); break;
     case 'wtask':
