@@ -1,0 +1,90 @@
+diff --git a/runtime/web/src/dispatcher.js b/runtime/web/src/dispatcher.js
+index 56b7a42..1f60633 100644
+--- a/runtime/web/src/dispatcher.js
++++ b/runtime/web/src/dispatcher.js
+@@ -44,7 +44,7 @@ export class RuntimeDispatcher {
+ 
+   constructor(config = {}) {
+     this.#config = config;
+-    this.#protection = new RuntimeProtection(config);
++    this.#protection = new RuntimeProtection(config, ALIASES);
+     this.#handles = new HandleRegistry();
+     this.#graph = new ObjectGraph(this.#protection, config.graphBudget ?? 20_000,
+       () => this.#handles.pinned());
+@@ -72,6 +72,7 @@ export class RuntimeDispatcher {
+   }
+ 
+   async #execute(tool, args, request) {
++    this.#protection.checkTool(tool);
+     switch (tool) {
+       case 'runtime.capabilities': return this.capabilities();
+       case 'runtime.attach': return this.attach();
+@@ -526,7 +527,7 @@ export class RuntimeDispatcher {
+       lifetimes: [...LIFETIMES],
+       persistentPayloadsSuspended: this.#payloads.persistentSuspended,
+       security: this.#protection.describe(),
+-      tools: [...TOOLS],
++      tools: TOOLS.filter((t) => !this.#protection.isDeniedTool(t)),
+       unsupported,
+     };
+   }
+diff --git a/runtime/web/src/protection.js b/runtime/web/src/protection.js
+index b372b62..f4f878d 100644
+--- a/runtime/web/src/protection.js
++++ b/runtime/web/src/protection.js
+@@ -22,13 +22,22 @@ export class RuntimeProtection {
+   /** Identity set of the runtime's own internals. Held in closure scope; never exposed. */
+   #protected = new WeakSet();
+   #deniedTypePrefixes;
++  #deniedTools;
++  #aliases;
+   #allowCodeReplacement;
+   #allowCodeLoading;
+ 
+-  constructor(config = {}) {
++  constructor(config = {}, aliases = {}) {
+     this.#deniedTypePrefixes = Object.freeze(
+       (config.denyTypePrefix ?? []).filter((p) => typeof p === 'string' && p.length > 0),
+     );
++    // Resolved to canonical names so a denial covers every spelling of the tool, alias or not.
++    this.#aliases = aliases;
++    this.#deniedTools = Object.freeze(new Set(
++      (config.denyTools ?? [])
++        .filter((t) => typeof t === 'string' && t.length > 0)
++        .map((t) => aliases[t] ?? t),
++    ));
+     this.#allowCodeReplacement = config.allowCodeReplacement !== false;
+     this.#allowCodeLoading = config.allowCodeLoading !== false;
+   }
+@@ -69,6 +78,23 @@ export class RuntimeProtection {
+     return typeof name === 'string' && this.#deniedTypePrefixes.some((prefix) => name.startsWith(prefix));
+   }
+ 
++  /** Layer 2 only: the canonical spelling of a tool name, aliases resolved. */
++  canonicalTool(tool) {
++    return this.#aliases[tool] ?? tool;
++  }
++
++  /** Layer 2 only: is this tool, or any alias of it, denied by the integrator? */
++  isDeniedTool(tool) {
++    return typeof tool === 'string' && this.#deniedTools.has(this.canonicalTool(tool));
++  }
++
++  /** Layer 2: refuse a denied tool before any of its handlers runs. */
++  checkTool(tool) {
++    if (this.isDeniedTool(tool)) {
++      throw new RuntimeSecurityError(`Tool denied by integrator policy: ${tool}`);
++    }
++  }
++
+   /** Reads are permitted against the runtime's own objects — inspecting the guard is allowed. */
+   checkRead(tool, target) {
+     const name = typeof target === 'string' ? target : typeNameOf(target);
+@@ -115,6 +141,7 @@ export class RuntimeProtection {
+       protectedNamespace: `${PROTECTED_TYPE_PREFIX}* types and every object owned by the runtime instance`,
+       openNamespaces: [...OPEN_TYPE_NAMES],
+       integratorDeniedPrefixes: [...this.#deniedTypePrefixes],
++      integratorDeniedTools: [...this.#deniedTools],
+       allowCodeReplacement: this.#allowCodeReplacement,
+       allowCodeLoading: this.#allowCodeLoading,
+     };

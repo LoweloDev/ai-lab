@@ -186,3 +186,16 @@ Dashboard: `http://127.0.0.1:8100` (`dashboard/start.sh`), liest alles aus Datei
   Modelle bleiben liegen (133 GiB) — Wiederholung nach RAM-Upgrade: `bench/kandidaten-kette.sh <retry-log>` (wartet
   auf Marker, die alle existieren → startet sofort) oder je Modell `serve.sh mistral4|qwen35|laguna vulkan`.
   Damit läuft NICHTS mehr; alle Bahnen der Kampagne sind abgeschlossen.
+
+## 11:00 — Aufräumen (Tobias' Anweisung) — ERLEDIGT
+- **Modelle gelöscht** (~65 GiB): Qwen3.8-27B (+mmproj), Muse-Glimmer-30B (+mmproj), Qwen3-Coder-Next-80B, Qwen3-0.6B.
+  **Behalten:** Qwen3.6-35B-A3B (Go-to) + die drei 120B-Kandidaten Mistral 4 / Qwen3.5-122B / Laguna (für den
+  Offload-Test nach dem RAM-Upgrade; NICHT mehr eingereiht — Tobias macht das mit Antigravity/DeepSeek).
+  Registry: gelöschte Modelle im Katalog (erneut ladbar), serve.sh-Cases bleiben (scheitern nur bei fehlender Datei).
+- **Gelöscht:** bench/audit-scratch (6,4 GB), .runs-view, smoke-ws, ALLE Token-Kopien (runs/**/cc-home|agy-home|dsh-home,
+  bench/agy-auth-home — für weitere agy-Läufe In-Container-Login wiederholen), alle Workspaces unter bench/runs/*/*/ws
+  und polyglot-oc/runs/*/*/ws (Ergebnisse, Transkripte, Meta bleiben; Dashboard geprüft: alle APIs 200, 0 stale).
+- **Behalten:** bench/workspaces (Baselines — die gehärteten Grader vergleichen dagegen!), bench/aider (Aider-Ergebnisse =
+  Dashboard-Datenquelle), polyglot-oc/runs ohne ws (1,2 GB Transkripte), podman-Images agent-bench / agent-bench-dsh /
+  aider-bench (8 GB; aider-bench wird vom OC-Polyglot-Runner für Tests gebraucht).
+- denyTools-Lösung von qwen38 (52/52) als Patch gesichert: ~/ai-lab/denytools-qwen38.patch (90 Zeilen).
