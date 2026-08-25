@@ -211,3 +211,10 @@ A5 "immer mehr Spec lesen", A6 "dieselbe Datei nochmal lesen". Folgetest-Idee (H
 Median 24 s vs 53 s je Uebung; Envelope-Summen low: Input 8,46 M, Output 209 k, Thinking 68 k, Cache 9,55 M
 (high: 11,34 M / 888 k / 684 k / 23,2 M). Testdateien byteidentisch, 0 Fehler. Effort-A/B damit auf Suite UND
 Polyglot eindeutig: gleiche Qualitaet, halbe Zeit, ein Viertel Output, ein Zehntel Thinking.
+
+## 25.08. 09:58 — UX-Wertung (bench/webapp/UX-WERTUNG.md, Opus-Auszaehlung gegen 10 gepflanzte Fehler)
+DOM: cc-opus5 10/10 (+9 Bonus, 0 falsch), cc-opus48 10/10, muse 8, gemini37f/agy/ds-pro 7, qwen36moe 6,
+codernext 5 (+3 FALSCH), ds-flash und qwen38 0 = LEERE Antwort (Thinking frass das Token-Budget; Wiederholung
+mit max_tokens 12000 / enable_thinking:false steht im TODO). Vision (27B, Muse): 5/10, nur Klassiker.
+Befund: UX-Review ist Arbeit OHNE Test-Rueckkanal — die einzige Disziplin der Kampagne, in der Opus sich
+klar absetzt (Fluss-Fehler: Opus 3/3, Flash 1/3). Deckt sich mit der TB-3-Einordnung.
