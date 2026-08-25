@@ -218,3 +218,11 @@ codernext 5 (+3 FALSCH), ds-flash und qwen38 0 = LEERE Antwort (Thinking frass d
 mit max_tokens 12000 / enable_thinking:false steht im TODO). Vision (27B, Muse): 5/10, nur Klassiker.
 Befund: UX-Review ist Arbeit OHNE Test-Rueckkanal — die einzige Disziplin der Kampagne, in der Opus sich
 klar absetzt (Fluss-Fehler: Opus 3/3, Flash 1/3). Deckt sich mit der TB-3-Einordnung.
+
+## 25.08. 10:45 — Kandidaten-Runde 100-130B-MoE ABGEBROCHEN: laedt, arbeitet aber nicht
+Mistral Small 4 119B-A6.5B (imatrix IQ3_XXS, 42,7 GiB): llama-bench Vulkan pp 109 t/s, tg 6,3 t/s (d0 und
+d10k gleich = RAM/NVMe-Streaming-limitiert; ROCm-Bench ohne Ergebnis). Suite U1 (Einzeiler-Fix, sonst
+33-115 s): 30-min-Timeout OHNE Aenderung. Bei 6 t/s kommt der Agentenloop nicht zum Schreiben. Qwen3.5-122B
+und Laguna (44/46 GiB, gleiche Klasse) nicht mehr gefahren — gleiches Bild erwartet. Fazit: Die 120B-Klasse
+passt mit 32 GiB RAM + 20 GiB VRAM zwar per IQ3 auf die Platte, aber nicht in den Arbeitsspeicher; ohne
+RAM-Upgrade (64 GiB) keine Agentenarbeit. Modelle bleiben unter models/ (133 GiB) fuer einen spaeteren Versuch.

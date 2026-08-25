@@ -119,3 +119,4 @@
 {"model":"agy-37flash-low","task":"agora-A4-feed","grade":"PASS","seconds":34.5,"exit":0,"changed":" 1 file changed, 1 insertion(+), 1 deletion(-)"}
 {"model":"agy-37flash-low","task":"agora-A5-batcher-scratch","grade":"FAIL tests-red missing=[TestGradeMobileOneItemPerBatchBestFirst] failed=[TestGradeMobileOneItemPerBatchBestFirst] rc=1","seconds":65.9,"exit":0,"changed":" 1 file changed, 3 insertions(+), 3 deletions(-)"}
 {"model":"agy-37flash-low","task":"agora-A6-scorer-scratch","grade":"PASS","seconds":77.8,"exit":0,"changed":" 1 file changed, 3 insertions(+), 3 deletions(-)"}
+{"model":"mistral4-vulkan","task":"aiux-U1-paging","grade":"FAIL tests (pass=45 fail=1 rc=1)","seconds":1830.0,"exit":137,"changed":""}

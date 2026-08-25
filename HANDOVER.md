@@ -181,3 +181,8 @@ Dashboard: `http://127.0.0.1:8100` (`dashboard/start.sh`), liest alles aus Datei
 - 09:50 Kandidaten-Runde: Mistral Small 4 119B IQ3_XXS läuft — llama-bench Vulkan tg 6,3 t/s, pp 109 t/s (Streaming-
   Kante; halb so schnell wie geschätzt, 1/4 des 80B). Suite wird Stunden dauern; Abbruch jederzeit: `pkill -f kandidaten-kette`
   + `pkill -x llama-server` (laufender Task wird als Timeout/Abbruch gewertet, Rest entfällt). ROCm-bench läuft/lief nach.
+- 10:45 **Kandidaten-Runde abgebrochen** (Claude, nach dem ersten Datenpunkt): Mistral 4 U1 = 30-min-Timeout ohne
+  Aenderung bei 6,3 t/s. Ergebnis = "laedt, arbeitet nicht" (failure-analysis 10:45). GPU frei, kein Container.
+  Modelle bleiben liegen (133 GiB) — Wiederholung nach RAM-Upgrade: `bench/kandidaten-kette.sh <retry-log>` (wartet
+  auf Marker, die alle existieren → startet sofort) oder je Modell `serve.sh mistral4|qwen35|laguna vulkan`.
+  Damit läuft NICHTS mehr; alle Bahnen der Kampagne sind abgeschlossen.
