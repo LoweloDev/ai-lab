@@ -412,10 +412,19 @@ def read_polyglot(show_hidden=False):
 
 def annotate_run(p):
     run = (p.get('dir') or '').strip()
-    if not re.match(r'^[A-Za-z0-9][A-Za-z0-9._-]{0,200}$', run):
-        raise ValueError('Ungültiger Run-Ordnername.')
-    if not os.path.isdir(os.path.join(TMPB, run)):
-        raise ValueError('Unbekannter Polyglot-Lauf: %s' % run)
+    # Zwei Quellen: Aider-Laeufe (Ordner unter tmp.benchmarks) und Harness-Laeufe 'oc:<label>'
+    # (Ordner unter bench/polyglot-oc/runs). Annotation wird unter dem uebergebenen Schluessel gespeichert.
+    if run.startswith('oc:'):
+        label = run[3:]
+        if not re.match(r'^[A-Za-z0-9][A-Za-z0-9._-]{0,200}$', label):
+            raise ValueError('Ungültiger Run-Name.')
+        if not os.path.isdir(os.path.join(BENCH, 'polyglot-oc', 'runs', label)):
+            raise ValueError('Unbekannter Harness-Lauf: %s' % label)
+    else:
+        if not re.match(r'^[A-Za-z0-9][A-Za-z0-9._-]{0,200}$', run):
+            raise ValueError('Ungültiger Run-Ordnername.')
+        if not os.path.isdir(os.path.join(TMPB, run)):
+            raise ValueError('Unbekannter Polyglot-Lauf: %s' % run)
     annot = load_json(ANNOT, {})
     a = dict(annot.get(run) or {})
     if 'hidden' in p:
