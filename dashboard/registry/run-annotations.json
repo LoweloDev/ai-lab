@@ -25,5 +25,10 @@
   "label": "dsh Smoke",
   "hidden": true,
   "note": "Technischer Probelauf des dsh-Polyglot-Runners (1 Uebung, 25.08. 00:40) — kein Benchmark."
+ },
+ "oc:oc-qwen38-polyglot": {
+  "label": "oc-qwen38-polyglot (abgebrochen, 18/73)",
+  "hidden": false,
+  "note": "Auf Tobias' Wunsch 25.08. 09:41 nach 18/73 abgebrochen (~8 min je Uebung, 27B dense). Teilergebnis 61 %/83 % = gueltige Stichprobe, nicht mit 73er-Laeufen gleichsetzen."
  }
 }

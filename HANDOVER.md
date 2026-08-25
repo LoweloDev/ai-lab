@@ -120,10 +120,9 @@ Dashboard: `http://127.0.0.1:8100` (`dashboard/start.sh`), liest alles aus Datei
   Claude-OAuth-Tokens), `bench/agy-auth-home/` (Antigravity-OAuth-Token) und 3,7 GiB audit-scratch nach
   GitHub (privates Repo LoweloDev/ai-lab) gepusht. Ursache: .gitignore-Muster mit Inline-Kommentar
   (von Git nicht unterstuetzt) + Secret-Scan ohne Abbruch. Beides gefixt (Muster korrigiert, Scan = hartes Gate).
-- Lokal ersetzt durch sauberen Commit `746a14a` (55 Dateien, 0 Credentials). **Force-Push durch Tobias
-  noetig** (Auto-Modus verweigert Claude das): `cd ~/ai-lab && git push --force-with-lease origin main`.
-  Pruefung danach: `git ls-remote origin main` == `git rev-parse HEAD`.
-- **Morgen (nach Ende aller Ketten):** Tokens rotieren — Claude `/logout` + `/login`; Antigravity neu
+- **ERLEDIGT 09:50:** Force-Push auf Tobias' Anweisung durch Claude (`e343b83` → `671444d`, forced update);
+  Remote sauber, `git ls-files` ohne Credentials. Verwaiste Objekte bei GitHub ggf. per Support löschen.
+- **JETZT NÄCHSTER SCHRITT (Tobias):** Tokens rotieren — Claude `/logout` + `/login`; Antigravity neu
   einloggen UND `bench/agy-auth-home/` per In-Container-Login erneuern (Befehl in API-RUNBOOK/README).
   Optional GitHub-Support bitten, verwaiste Objekte zu loeschen.
 - Download der Kandidaten ist komplett (01:36, 3/3 OK); Robustheits-Dashboard-Workflow gestoppt
@@ -163,3 +162,19 @@ Dashboard: `http://127.0.0.1:8100` (`dashboard/start.sh`), liest alles aus Datei
   A4 R10/P6, A5 R7/P5, A6 R12/P9, U1 R11/P4, U2 R10/P4; Kosten ≈0,3 $). Host: py_compile + node --check ok.
   Opus-5-Prüfer läuft (Determinismus, Plausibilität, Server-Neustart, /api/robustness, Job, Wiki) →
   `bench/robustness-battery/pruefbericht.md` mit FREIGABE JA/NEIN. Bis dahin läuft das Dashboard noch mit altem Code.
+- 03:40 Umbau GEPRÜFT (Opus-5-Agent): **FREIGABE JA** — Bericht `bench/robustness-battery/pruefbericht.md`.
+  Runner deterministisch (3x --force identisch, Idempotenz 131 ms), 104 Paare, Workspaces unversehrt,
+  Dashboard NEU GESTARTET mit dem Umbau: /api/suite robust-Felder 121/121, /api/robustness 13 Labels, Job
+  'robustheit' (CPU-Slot, ohne GPU-Lock) getestet, Wiki `dashboard/wiki/robustheit.md`. Fixes des Prüfers:
+  ⚠-Kennzeichnung bei nicht baubaren Tasks (qwen38 6/8), A1-nil-Context-Test entschärft. Echte Funde:
+  qwen36moe A5 hängt bei PageSize 0 / panickt bei negativer PageSize (Path 42/44).
+  Scores: alle 9 Cloud-Läufe + Flash-low 78/79 (99 %; einziger Riss = A5-Sortier-Property), muse 75/79,
+  qwen36moe 74/79, codernext 63/79 (80 %; A4-Bug nie gefunden + A5 drei Properties), qwen38 60/60 ⚠ 6/8.
+  Offen (niedrig): Trennschärfe kommt aus A4/A5/A6/U2 (A1/A2/A3/U1 überall 100 %). Aufgeräumt: totes Binary,
+  GOCACHE nach ~/.cache (war 2,5 GB im RAM-tmpfs). Lokal committed 671444d — Push wartet auf Tobias' Force-Push.
+- 03:50 **Tobias' Entscheidung lokal: Qwen3.6-35B-A3B ist der Go-to** (trotz geringerer Genauigkeit als 27B: das 27B
+  liefert bei den komplexen From-Scratch-Tasks gar nichts ab, das 35B baut und ist 5x schneller). Setup-Empfehlung:
+  `serve.sh qwen36moe vulkan -c 65536` + OpenCode + AGENTS.md-Regeln (failure-analysis 4b); 80B nur als
+  From-Scratch-Sonderwerkzeug. In den Morgenbericht als Fazit "lokal" übernehmen.
+- 09:50 Abschlussbericht als Artifact "Agenten-Labor" aktualisiert (UX-Tabelle folgt nach Auszählung). OC-Polyglot
+  lokal fertig: 35B 40/53, 80B 27/47, 27B abgebrochen 11/15 von 18 (Tobias). Kandidaten-Runde läuft seit ~09:45.
